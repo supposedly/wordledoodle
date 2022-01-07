@@ -1,0 +1,38 @@
+:root {
+    --green: #6aaa64;
+    --darkened-green: #538d4e;
+    --yellow: #c9b458;
+    --darkened-yellow: #b59f3b;
+    --light-gray: #d8d8d8;
+    --gray: #86888a;
+    --dark-gray: #3a3a3c; /*#939598;*/
+    --white: #fff;
+    --black: #212121;
+    --orange: #f5793a;
+    --blue: #85c0f9;
+    --header-height: 50px;
+    --keyboard-height: 200px;
+    --game-max-width: 500px;
+
+    /* font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; */
+    font-family: 'Clear Sans', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 16px;
+    color: var(--white);
+    background-color: var(--black);
+}
+
+:root, .dark {
+    --color-correct: var(--darkened-green);
+    --color-present: var(--darkened-yellow);
+}
+
+.light {
+    --color-correct: var(--green);
+    --color-present: var(--yellow);
+}
+
+.high-contrast {
+    --color-correct: var(--orange);
+    --color-present: var(--blue);
+}

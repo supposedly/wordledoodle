@@ -10,7 +10,7 @@ export default defineConfig({
       transform(src, id) {
         if (/\.dictionary$/.test(id)) {
           return {
-            code: `export default ${JSON.stringify(src.split(' ').sort())}`
+            code: `export default ${JSON.stringify(src.split(' ').sort())};`
           };
         }
       }
