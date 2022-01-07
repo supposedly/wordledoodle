@@ -1,5 +1,6 @@
 <script lang="ts">
   import logo from './assets/svelte.png'
+  import dict from './assets/wordle.dictionary'
   import Counter from './lib/Counter.svelte'
 </script>
 
