@@ -8,14 +8,37 @@
 
   let containerHeight: number;
   let paintState: State;
+
+  function solve(message: CustomEvent<{answer: string}>) {
+    const answer = message.detail.answer;
+  
+    let low = 0;
+    let high = dictionary.length - 1;
+    let mid: number;
+
+    do {
+      mid = Math.floor((high + low) / 2);
+      if (dictionary[mid] > answer) {
+        high = mid;
+      }
+      if (dictionary[mid] < answer) {
+        low = mid;
+      }
+      if (high - low <= 1) {
+        break;
+      }
+    } while (dictionary[mid] !== answer);
+
+    console.log(dictionary[mid] === answer);
+  }
 </script>
 
 <article class="game">
-  <section class="item-center">
+  <section class="item-center" bind:clientHeight={containerHeight}>
     <Picker bind:paintState />
   </section>
   <section class="item-center board-container" bind:clientHeight={containerHeight}>
-    <Grid containerHeight={containerHeight} paintState={paintState} />
+    <Grid {containerHeight} {paintState} on:solve={solve} />
   </section>
 </article>
 
