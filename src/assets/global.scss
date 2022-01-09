@@ -46,7 +46,7 @@
     --color-present: var(--blue);
 }
 
-button {
+button, input[type=radio] {
   background: linear-gradient(0deg, transparent 0%, transparent 50%, rgba(185, 185, 185, 0.5) 100%);
   box-shadow: inset var(--black) 0px 0px 2px 0px, #000 0px 2px 5px 0px;
   border: none;

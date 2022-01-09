@@ -34,10 +34,8 @@
 </script>
 
 <article class="game">
-  <section class="item-center" bind:clientHeight={containerHeight}>
-    <Picker bind:paintState />
-  </section>
-  <section class="item-center board-container" bind:clientHeight={containerHeight}>
+  <Picker bind:paintState />
+  <section class="item-center container" bind:clientHeight={containerHeight}>
     <Grid {containerHeight} {paintState} on:solve={solve} />
   </section>
 </article>
@@ -58,7 +56,7 @@
     align-items: center;
   }
 
-  .board-container {
+  .container {
     flex-grow: 1;
     overflow: hidden;
   }

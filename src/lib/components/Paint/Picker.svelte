@@ -1,36 +1,46 @@
 <script lang="ts">
   import { State, CSSState } from '../../utils/enums';
 
-  export let paintState: State = State.Empty;
-
-  function getState(state: number) {
-    // this stops syntax highlighting from breaking in vscode...
-    return State[state];
-  }
+  export let paintState: State = State.Right;
 </script>
 
-these buttons are ugly i'm going to fix them
-{#each [1, 2, 3] as state}
-  <button class={CSSState[state].toLowerCase()} on:click={() => paintState = state}>
-    {getState(state)}
-  </button>
-{/each}
+<section>
+  {#each [1, 2, 3] as state}
+    <input
+      type="radio"
+      name="color"
+      title={`Color for a letter that's ${State[state].toLowerCase()}`}
+      class={CSSState[state].toLowerCase()}
+      on:change={() => paintState = state}
+      checked
+    >
+    <!--
+      that `checked` is a hack to default to selecting the last radio button
+      (which is what happens if multiple buttons are `checked`)
+      WITHOUT unnecessarily binding it to paintState or anything
+    -->
+  {/each}
+</section>
 
 <style lang="scss">
-  button {
-    height: 100%;
-    width: 100%;
+  p {
+    text-align: center;
+    text-transform: uppercase;
+    color: var(--light-gray);
   }
 
   section {
-    height: 50px;
+    display: flex;
+    justify-content: space-evenly;
   }
 
-  button {
-    border-radius: 5px;
+  input[type=radio] {
+    appearance: none;
+    background: none;
+    flex-grow: 1;
     box-shadow: black 0px 2px 3px 0px;
-    font-weight: bold;
     color: var(--light-gray);
+    text-align: center;
     text-transform: uppercase;
 
     &.empty {
@@ -51,6 +61,18 @@ these buttons are ugly i'm going to fix them
     &.correct {
       background-color: var(--color-correct);
       border-color: transparent;
+    }
+
+    &:after {
+      content: '⚫';
+      color: transparent;
+      font-size: 3em;
+    }
+
+    &:checked:after {
+      content: '🖌️';
+      color: unset;
+      font-size: 3em;
     }
   }
 </style>
