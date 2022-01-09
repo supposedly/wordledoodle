@@ -131,7 +131,7 @@ function paintByTouch(e: TouchEvent) {
     align-items: center;
 
     &:nth-last-child(2) .clear::after {
-      content: "🗑️\A➡️";
+      content: "❌\A➡️";
     }
 
     .clear {
@@ -139,7 +139,7 @@ function paintByTouch(e: TouchEvent) {
       font-size: min(3.5vh, 1em);
 
       &::after {
-        content: "🗑️\A↘️";
+        content: "❌\A↘️";
         letter-spacing: -3px;
         white-space: pre;
       }
