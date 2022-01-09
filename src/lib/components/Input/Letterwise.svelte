@@ -1,6 +1,5 @@
 <script lang="ts">
-import { createEventDispatcher } from "svelte";
-
+  import { createEventDispatcher } from 'svelte';
 
   export let maxlength: number;
   export let placeholder: string;

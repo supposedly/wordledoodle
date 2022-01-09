@@ -3,8 +3,6 @@
   import type { Toaster } from './toaster';
 
   export let toaster: Toaster<string>;
-
-  // $: console.log($toaster);
 </script>
 
 <ol class="container">

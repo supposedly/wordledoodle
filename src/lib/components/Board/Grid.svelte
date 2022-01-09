@@ -2,7 +2,7 @@
   import { State } from '../../utils/enums';
   import Cell from './Cell.svelte';
   import Letterwise from '../Input/Letterwise.svelte';
-import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher } from 'svelte';
 
   type Letter = {state: State, value: string | null};
 
