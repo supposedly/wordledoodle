@@ -35,9 +35,10 @@
   }
 
   input[type=radio] {
+    flex-grow: 1;
     appearance: none;
     background: none;
-    flex-grow: 1;
+    padding: 10px;
     box-shadow: black 0px 2px 3px 0px;
     color: var(--light-gray);
     text-align: center;
@@ -66,13 +67,13 @@
     &:after {
       content: '⚫';
       color: transparent;
-      font-size: 3em;
+      font-size: 2.5em;
     }
 
     &:checked:after {
       content: '🖌️';
       color: unset;
-      font-size: 3em;
+      font-size: 2.5em;
     }
   }
 </style>
