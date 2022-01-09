@@ -118,11 +118,11 @@ import { createEventDispatcher } from "svelte";
         e.preventDefault();
       }
       break;
-      /*
-      // if user inputs a char at end of a filled input square, replace the next square's value
-      // COMMENTED OUT because it's inconsistent for now -- if the user inputs a char at
-      // the beginning of a filled input square, the square's value stays as is
       default: {
+        // replace already-entered characters when possible (aka act like pressing Insert in a text editor)
+        if (e.ctrlKey) {
+          break;
+        }
         if (!validPattern.test(e.key)) {
           break;
         }
@@ -130,23 +130,36 @@ import { createEventDispatcher } from "svelte";
           !e.target.value
           || e.target.selectionEnd === null
           || e.target.selectionStart !== e.target.selectionEnd  // if there's an actual selection
-          || e.target.selectionEnd < e.target.value.length  // if cursor is before end
         ) {
           break;
         }
-        const next = getNext(e.target);
-        if (next === null) {
-          break;
-        }
-        next.focus();
-        // ditto above :/
-        if (next.dataset.idx !== undefined) {
-          answer[+next.dataset.idx] = `${e.key}${answer[+next.dataset.idx].slice(1)}`;
+        // if cursor is before end
+        if (e.target.selectionEnd < e.target.value.length)  {
+          // ditto above :/
+          if (e.target.dataset.idx !== undefined) {
+            const value = answer[+e.target.dataset.idx];
+            answer[+e.target.dataset.idx] = `${
+              value.slice(e.target.selectionEnd, e.target.selectionEnd)
+            }${e.key}${
+              value.slice(e.target.selectionEnd + 1)
+            }`;
+          }
+          e.target.setSelectionRange(e.target.value.length, e.target.value.length);
+        } else {
+          // if cursor is at end
+          const next = getNext(e.target);
+          if (next === null) {
+            break;
+          }
+          next.focus();
+          // ditto above :/
+          if (next.dataset.idx !== undefined) {
+            answer[+next.dataset.idx] = `${e.key}${answer[+next.dataset.idx].slice(1)}`;
+          }
         }
         e.preventDefault();
       }
       break;
-      */
     }
   }
 
