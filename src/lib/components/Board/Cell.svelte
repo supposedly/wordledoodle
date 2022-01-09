@@ -8,8 +8,8 @@
   
   export let disabled = false;
 
-  function paint(mouseEvent: MouseEvent) {
-      if (mouseEvent.buttons !== 1) {
+  function paint(e: MouseEvent) {
+      if (e.buttons !== 1) {
           return;
       }
       state = paintState;
@@ -19,7 +19,8 @@
 <div class:disabled class={`tile ${CSSState[state || defaultState].toLowerCase()}`}
   on:mouseenter={paint}
   on:mousedown={paint}
->
+  on:touchmove|preventDefault={() => { state = paintState; }}
+  >
   <!--let-->{ter || ''}
 </div>
 

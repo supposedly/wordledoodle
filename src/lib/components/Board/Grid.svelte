@@ -62,11 +62,22 @@
     resizeBoard();
   }
 }
+
+// need to handle touchmove from up here rather than solely in the individual cells
+// bc for some reason touchmove only fires on the element that was originally touchdown'd on...
+function paintByTouch(e: TouchEvent) {
+  const [pos] = e.changedTouches;
+  if (pos !== undefined) {
+    document.elementFromPoint(pos.clientX, pos.clientY)?.dispatchEvent(
+      new TouchEvent('touchmove')
+    );
+  }
+}
 </script>
 
 <svelte:window on:resize={resizeBoard} />
 
-<div class="board" style={`width: ${boardWidth}px; height: ${boardHeight}px;`}>
+<div class="board" style={`width: ${boardWidth}px; height: ${boardHeight}px;`} on:touchmove|preventDefault={paintByTouch}>
   {#each patterns as word, row}
     <div class="row">
       <button
@@ -91,9 +102,9 @@
       placeholder="word?"
       maxlength={1}
       {length}
-      on:solve
       let:valid
       let:dispatch
+      on:solve
     >
       <button title="Solve for this word" on:click|preventDefault={() => dispatch()} disabled={!valid}></button>
     </Letterwise>
@@ -120,15 +131,15 @@
     align-items: center;
 
     &:nth-last-child(2) .clear::after {
-      content: "❌\A➡️";
+      content: "🗑️\A➡️";
     }
 
     .clear {
       background-color: var(--black);
-
+      font-size: min(3.5vh, 1em);
 
       &::after {
-        content: "❌\A↘️";
+        content: "🗑️\A↘️";
         letter-spacing: -3px;
         white-space: pre;
       }
