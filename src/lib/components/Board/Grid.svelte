@@ -76,7 +76,7 @@ function paintByTouch(e: TouchEvent) {
 }
 
 const dispatcher = createEventDispatcher();
-const solve = ({detail: answer}: {detail: string}) => dispatcher('solve', {answer, patterns});
+const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('solve', {answer, patterns});
 </script>
 
 <svelte:window on:resize={resizeBoard} />

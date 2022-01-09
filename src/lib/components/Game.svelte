@@ -12,7 +12,7 @@
 
   let errorMessage: string = '';  // TODO: replace with a special object or something
 
-  function solve(message: CustomEvent<{answer: string}>) {
+  function solve(message: CustomEvent<{answer: string, patterns: string[]}>) {
     errorMessage = '';
     if (!dictionary.has(message.detail.answer)) {
       errorMessage = 'Not in word list';
