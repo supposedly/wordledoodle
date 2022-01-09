@@ -14,20 +14,32 @@
   let paintState: State;
 
   const toaster = new Toaster<string>();
+  const SHAKE_DURATION = 250;
+  let shaking = false;
 
   function solve(message: CustomEvent<{answer: string, patterns: string[]}>) {
     if (!dictionary.has(message.detail.answer)) {
-      toaster.push('Not in word list');
+      error('Not in word list');
     }
+  }
+
+  function error(message: string) {
+    toaster.push(message);
+    shake();
+  }
+
+  function shake() {
+    shaking = true;
+    setTimeout(() => { shaking = false; }, SHAKE_DURATION);
   }
 </script>
 
-<ToastContainer {toaster}/>
 
-<article class="game">
+<article class="game" style="--shake-duration: {SHAKE_DURATION}ms">
   <Picker bind:paintState />
   <section class="item-center container" bind:clientHeight={containerHeight}>
-    <Grid {containerHeight} {paintState} on:solve={solve} />
+    <ToastContainer {toaster}/>
+    <Grid {containerHeight} {paintState} {shaking} on:solve={solve} />
   </section>
 </article>
 
@@ -44,7 +56,6 @@
   .item-center {
     display: flex;
     justify-content: center;
-    align-items: center;
   }
 
   .container {

@@ -1,5 +1,11 @@
 import { GeneralizedSuffixArray } from 'mnemonist/suffix-array';
 
+export enum Match {
+  Sike,
+  Partial,
+  Exact
+}
+
 export class Dictionary {
   private dictionary: string[];
   private gsa: GeneralizedSuffixArray;

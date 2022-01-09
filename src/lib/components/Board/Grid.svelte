@@ -12,6 +12,8 @@
   const BlankState = State.Empty;
   /* const BlankState = State.Wrong */
 
+  export let centerSelf = true;
+  export let shaking = false;
   export let length = 5;
   export let height = 6;
   export let paintState: State;
@@ -81,7 +83,13 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
 
 <svelte:window on:resize={resizeBoard} />
 
-<div class="board" style={`width: ${boardWidth}px; height: ${boardHeight}px;`} on:touchmove|preventDefault={paintByTouch}>
+<div
+  class="board"
+  class:center={centerSelf}
+  class:shaking
+  style="width: {boardWidth}px; height: {boardHeight}px;"
+  on:touchmove|preventDefault={paintByTouch}
+>
   {#each patterns as word, row}
     <div class="row">
       <button
@@ -122,6 +130,16 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
     grid-gap: 5px;
     padding: 10px;
     box-sizing: border-box;
+    transition: transform var(--shake-duration) cubic-bezier(0.5, 2, 0.5, -1);
+    transform: translateX(0);
+
+    &.center {
+      align-self: center;
+    }
+
+    &.shaking {
+      transform: translateX(1vw);
+    }
 
     * {
       user-select: none;
