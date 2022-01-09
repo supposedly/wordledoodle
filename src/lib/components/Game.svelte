@@ -1,33 +1,34 @@
 <script lang="ts">
   import type { State } from '../utils/enums';
   import type { Dictionary } from '../utils/search';
-
+  
   import Grid from './Board/Grid.svelte';
   import Picker from './Paint/Picker.svelte';
+
+  import ToastContainer from './Notifications/Container.svelte';
+  import { Toaster } from './Notifications/toaster';
 
   export let dictionary: Dictionary;
 
   let containerHeight: number;
   let paintState: State;
 
-  let errorMessage: string = '';  // TODO: replace with a special object or something
+  const toaster = new Toaster<string>();
 
   function solve(message: CustomEvent<{answer: string, patterns: string[]}>) {
-    errorMessage = '';
     if (!dictionary.has(message.detail.answer)) {
-      errorMessage = 'Not in word list';
+      toaster.push('Not in word list');
     }
   }
 </script>
+
+<ToastContainer {toaster}/>
 
 <article class="game">
   <Picker bind:paintState />
   <section class="item-center container" bind:clientHeight={containerHeight}>
     <Grid {containerHeight} {paintState} on:solve={solve} />
   </section>
-  <p class="error">
-    {errorMessage}
-  </p>
 </article>
 
 <style>
@@ -49,11 +50,5 @@
   .container {
     flex-grow: 1;
     overflow: hidden;
-  }
-
-  .error {
-    flex-grow: 1;
-    text-align: center;
-    color: var(--white);
   }
 </style>
