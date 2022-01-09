@@ -1,35 +1,22 @@
 <script lang="ts">
   import type { State } from '../utils/enums';
+  import type { Dictionary } from '../utils/search';
 
   import Grid from './Board/Grid.svelte';
   import Picker from './Paint/Picker.svelte';
 
-  export let dictionary: string[];
+  export let dictionary: Dictionary;
 
   let containerHeight: number;
   let paintState: State;
 
+  let errorMessage: string = '';  // TODO: replace with a special object or something
+
   function solve(message: CustomEvent<{answer: string}>) {
-    const answer = message.detail.answer;
-  
-    let low = 0;
-    let high = dictionary.length - 1;
-    let mid: number;
-
-    do {
-      mid = Math.floor((high + low) / 2);
-      if (dictionary[mid] > answer) {
-        high = mid;
-      }
-      if (dictionary[mid] < answer) {
-        low = mid;
-      }
-      if (high - low <= 1) {
-        break;
-      }
-    } while (dictionary[mid] !== answer);
-
-    console.log(dictionary[mid] === answer);
+    errorMessage = '';
+    if (!dictionary.has(message.detail.answer)) {
+      errorMessage = 'Not in word list';
+    }
   }
 </script>
 
@@ -38,6 +25,9 @@
   <section class="item-center container" bind:clientHeight={containerHeight}>
     <Grid {containerHeight} {paintState} on:solve={solve} />
   </section>
+  <p class="error">
+    {errorMessage}
+  </p>
 </article>
 
 <style>
@@ -59,5 +49,11 @@
   .container {
     flex-grow: 1;
     overflow: hidden;
+  }
+
+  .error {
+    flex-grow: 1;
+    text-align: center;
+    color: var(--white);
   }
 </style>

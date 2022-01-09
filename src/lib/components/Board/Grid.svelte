@@ -2,6 +2,7 @@
   import { State } from '../../utils/enums';
   import Cell from './Cell.svelte';
   import Letterwise from '../Input/Letterwise.svelte';
+import { createEventDispatcher } from 'svelte';
 
   type Letter = {state: State, value: string | null};
 
@@ -73,6 +74,9 @@ function paintByTouch(e: TouchEvent) {
     );
   }
 }
+
+const dispatcher = createEventDispatcher();
+const solve = ({detail: answer}: {detail: string}) => dispatcher('solve', {answer, patterns});
 </script>
 
 <svelte:window on:resize={resizeBoard} />
@@ -104,7 +108,7 @@ function paintByTouch(e: TouchEvent) {
       {length}
       let:valid
       let:dispatch
-      on:solve
+      on:solve={solve}
     >
       <button title="Solve for this word" on:click|preventDefault={() => dispatch()} disabled={!valid}></button>
     </Letterwise>

@@ -1,11 +1,14 @@
 <script lang="ts">
-  import dictionary from './assets/wordle.dictionary';
-  import Game from './lib/components/Game.svelte';
+  import { Dictionary } from './lib/utils/search';
 
+  import Game from './lib/components/Game.svelte';
+  
+  import dictionary from './assets/wordle.dictionary';
   import './assets/global.scss';
+
 </script>
 
-<Game {dictionary}/>
+<Game dictionary={new Dictionary(dictionary)}/>
 
 <!--
   main {
