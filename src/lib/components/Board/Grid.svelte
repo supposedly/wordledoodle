@@ -138,7 +138,7 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
     }
 
     &.shaking {
-      transform: translateX(1vw);
+      transform: translateX(15px);
     }
 
     * {
