@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { type State, CSSState } from '../../utils/enums';
+  import { type State, CSSState } from '../../utils/types';
 
   export let ter: string | null;
   export let state: State;

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { State, CSSState } from '../../utils/enums';
+  import { State, CSSState } from '../../utils/types';
 
   export let paintState: State = State.Right;
 </script>

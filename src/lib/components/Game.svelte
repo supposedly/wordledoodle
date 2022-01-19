@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { State } from '../utils/enums';
+  import type { State, CellValue } from '../utils/types';
   import type { Dictionary } from '../utils/search';
   
   import Grid from './Board/Grid.svelte';
@@ -17,7 +17,7 @@
   const SHAKE_DURATION = 250;
   let shaking = false;
 
-  function solve(message: CustomEvent<{answer: string, patterns: {state: State, value: string | null}[][]}>) {
+  function solve(message: CustomEvent<{answer: string, patterns: CellValue[][]}>) {
     if (!dictionary.has(message.detail.answer)) {
       error('Not in word list');
       return;

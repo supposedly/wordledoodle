@@ -1,10 +1,8 @@
 <script lang="ts">
-  import { State } from '../../utils/enums';
+  import { State, type CellValue } from '../../utils/types';
   import Cell from './Cell.svelte';
   import Letterwise from '../Input/Letterwise.svelte';
   import { createEventDispatcher } from 'svelte';
-
-  type Letter = {state: State, value: string | null};
 
   // not sure anymore whether making Empty the blank state is useful...
   // the minimum possible state once the game is actually solved will
@@ -19,7 +17,7 @@
   export let paintState: State;
   let highestEmptyRow: number = 0;
 
-  export const patterns: Letter[][] = Array.from(
+  export const patterns: CellValue[][] = Array.from(
     {length: height},
     _ => Array.from({length}, _ => ({state: BlankState, value: null}))
   );
@@ -42,7 +40,7 @@
     }
   }
 
-  function updateRow(word: Letter[]) {
+  function updateRow(word: CellValue[]) {
     word.forEach(letter => letter.state = BlankState);
     return word;
   }
