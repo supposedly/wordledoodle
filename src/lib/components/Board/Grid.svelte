@@ -186,7 +186,7 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
       font-weight: unset;
 
       &::after {
-        content: "📝";
+        content: "🎲";
         font-size: 1.5em;
       }
     }
