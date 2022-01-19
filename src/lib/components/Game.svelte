@@ -17,10 +17,19 @@
   const SHAKE_DURATION = 250;
   let shaking = false;
 
-  function solve(message: CustomEvent<{answer: string, patterns: string[]}>) {
+  function solve(message: CustomEvent<{answer: string, patterns: {state: State, value: string | null}[][]}>) {
     if (!dictionary.has(message.detail.answer)) {
       error('Not in word list');
+      return;
     }
+    console.log(
+      message.detail.patterns.map(
+        pattern => dictionary.match(
+          pattern.map(({state}) => state),
+          message.detail.answer
+        )
+      )
+    );
   }
 
   function error(message: string) {
