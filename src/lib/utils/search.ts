@@ -1,20 +1,22 @@
-import { GeneralizedSuffixArray } from 'mnemonist/suffix-array';
+import { GeneralizedSuffixArray, LRUCache, LRUMap } from 'mnemonist';
 import Sets from 'mnemonist/set';
 
 import { State } from './types';
 
 const EMPTY_SET = Object.freeze(new Set<string>());
+const LRU_CAPACITY = 512;  // idk
+
 class Possibility {
   constructor(
-    public readonly letter: string | null,
+    letter: string | null,
     public readonly set: Set<string>,
     public readonly letterCounts: Record<string, number>,  // record of letters still available to use
   ) {
     // shallow-copy this so we can mutate it
     this.letterCounts = {...this.letterCounts};
-    if (this.letter !== null) {
+    if (letter !== null) {
       // remove letter from available letters
-      this.letterCounts[this.letter] -= 1;
+      this.letterCounts[letter] -= 1;
     }
     // make it read-only
     this.letterCounts = Object.freeze(this.letterCounts);
@@ -22,7 +24,7 @@ class Possibility {
 }
 
 // create a counter of the letters/chars that appear in a string
-// TODO: simplify this with mnemonist's DefaultMap
+// TODO: maybe simplify this with mnemonist's DefaultMap
 // (https://yomguithereal.github.io/mnemonist/default-map#autoincrement)
 function counter(s: string): Record<string, number> {
   let counts: Record<string, number> = {};
@@ -33,22 +35,36 @@ function counter(s: string): Record<string, number> {
 }
 
 export class Dictionary {
-  private gsa: GeneralizedSuffixArray;
-  private gsaByPosition: number[][];
+  // this LRUCache stores string[] instead of Set<string> even though we have to get a
+  // set out of it eventually
+  // we got three reasons for that:
+  // 1. if we were to store a set we'd have to copy it out anyway bc the match() loop
+  //    does intersections in situ (and changing that to copy before intersecting would be
+  //    lame/inefficient)
+  // 2. given that we have to copy it out anyway, new Set(string[]) is for some reason
+  //    a lot faster than new Set(Set<string>) (probably a bug in engines but w/e)
+  // 3. plus, pushing to an array to create it in the first place is ofc a lot faster than
+  //    adding to a set
+  private gsaByPosition: {suffixes: number[], ranges: LRUCache<string, string[]>}[];
+  private gsaText: string;
 
   constructor(
     public readonly dictionary: string[],
     public readonly wordLength: number = 5
   ) {
-    const gsaWordLength = 1 + wordLength;
+    this.dictionary.sort();
+    const gsa = new GeneralizedSuffixArray(this.dictionary);
+    const gsaWordLength = 1 + this.wordLength;
 
-    this.dictionary = dictionary.sort();
-    this.wordLength = wordLength;
-    this.gsa = new GeneralizedSuffixArray(dictionary);
-  
-    this.gsaByPosition = Array.from({length: gsaWordLength}, () => []);
-    for (let value of this.gsa.array) {
-      this.gsaByPosition[value % gsaWordLength].push(value);
+    // asserting string bc this.dictionary's type makes string[] impossible
+    this.gsaText = gsa.text as string;
+    this.gsaByPosition = Array.from({length: gsaWordLength}, () => ({
+      suffixes: [],
+      ranges: new LRUCache(LRU_CAPACITY)
+    }));
+
+    for (let value of gsa.array) {
+      this.gsaByPosition[value % gsaWordLength].suffixes.push(value);
     }
   }
 
@@ -74,8 +90,8 @@ export class Dictionary {
   }
 
   private findFirst(letter: string, at: number): number {
-    const gsa = this.gsaByPosition[at];
-    const text = this.gsa.text;
+    const gsa = this.gsaByPosition[at].suffixes;
+    const text = this.gsaText;
 
     let low = 0;
     let high = gsa.length - 1;
@@ -94,8 +110,8 @@ export class Dictionary {
   }
 
   private findLast(letter: string, at: number): number {
-    const gsa = this.gsaByPosition[at];
-    const text = this.gsa.text;
+    const gsa = this.gsaByPosition[at].suffixes;
+    const text = this.gsaText;
 
     let low = 0;
     let high = gsa.length - 1;
@@ -115,24 +131,28 @@ export class Dictionary {
 
   // get all words that have the given letter at the given index
   private getRange(letter: string, at: number): Set<string> {
-    const gsa = this.gsaByPosition[at];
-    const first = this.findFirst(letter, at);
-    const last = this.findLast(letter, at);
-    const dictionary = this.dictionary;
+    const {suffixes: gsa, ranges: cache} = this.gsaByPosition[at];
 
-    let set = new Set<string>();
-    for (let idx = first; idx < last; idx++) {
-      set.add(dictionary[Math.floor(gsa[idx] / 6)]);
+    if (!cache.has(letter)) {
+      const first = this.findFirst(letter, at);
+      const last = this.findLast(letter, at);
+      const dictionary = this.dictionary;
+
+      let words: string[] = [];
+      for (let idx = first; idx < last; idx++) {
+        words.push(dictionary[Math.floor(gsa[idx] / 6)]);
+      }
+      cache.set(letter, words);
     }
 
-    return set;
+    return new Set(cache.get(letter));
   }
 
   // get all words that *don't* have any of the given letters at the given index
   // and group them by letter
   // (this is unused for now)
-  private getGroupedRangeWithout(letters: string[], at: number): [string, Set<string>][] {
-    const gsa = this.gsaByPosition[at];
+  private getGroupedRangeWithout(letters: string[], at: number): Record<string, Set<string>> {
+    const gsa = this.gsaByPosition[at].suffixes;
     let ranges = [
       -1,
       ...letters
@@ -159,12 +179,13 @@ export class Dictionary {
       }
     }
 
-    return Object.entries(sets);
+    return sets;
   }
 
   // get all words that *don't* have any of the given letters at the given index
+  // TODO: figure out how to LRU-cache this...
   private getRangeWithout(letters: string[], at: number): Set<string> {
-    const gsa = this.gsaByPosition[at];
+    const gsa = this.gsaByPosition[at].suffixes;
     let ranges = [
       -1,
       ...letters
@@ -189,9 +210,9 @@ export class Dictionary {
   }
 
   // soFar stores the state of the solve 'so far', i.e. all seen letters
-  // it starts out as a map of the original word produced by counter()
-  // (so for example the word 'banal' would start as {b: 1, a: 2, n: 1, l: 1})
-  // but every time we exhaust a letter its value gets decremented by one
+  // it starts out as a map of the original word produced by counter(),
+  // so for example the word 'banal' starts as {b: 1, a: 2, n: 1, l: 1}
+  // but every time we use a letter its value in there gets decremented by one
   private handleLetter(at: number, letter: string, state: State, soFar: Record<string, number>): Possibility[] {
     switch (state) {
       // 'Right' means we want a word that has this letter at this exact index
@@ -211,6 +232,7 @@ export class Dictionary {
       }
 
       // these mean we want a word that doesn't have this letter anywhere
+      // or one in which we've already used this letter all the way up
       default:
       case State.Empty:
       case State.Wrong: {
@@ -226,13 +248,17 @@ export class Dictionary {
     // and the same in turn applies to yellow => black
     const [firstIndex, ...sortedIndices] = pattern
       .map((_, idx) => idx)
-      .sort((a, b) => pattern[b] - pattern[a]);
+      .sort((a, b) => pattern[b] - pattern[a]);  // taking advantage of the State enum's ordering
 
     // this part is basically a giant reduce loop
     // `possibilities` is the accumulator / holds all possible words at each iteration
     // and slowly gets whittled down until we reach the end, where it'll store all results
-    let counts = counter(word);
-    let possibilities: Possibility[] = this.handleLetter(firstIndex, word[firstIndex], pattern[firstIndex], counts);
+    let possibilities: Possibility[] = this.handleLetter(
+      firstIndex,
+      word[firstIndex],
+      pattern[firstIndex],
+      counter(word)
+    );
 
     sortedIndices.forEach(idx => {
       const state = pattern[idx];
