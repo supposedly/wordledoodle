@@ -4,20 +4,26 @@ import Sets from 'mnemonist/set';
 import { State } from './types';
 
 const EMPTY_SET = Object.freeze(new Set<string>());
-class Node {
+class Possibility {
   constructor(
     public readonly letter: string | null,
     public readonly set: Set<string>,
-    public readonly counts: Record<string, number>
+    public readonly letterCounts: Record<string, number>,  // record of letters still available to use
   ) {
-    this.counts = {...this.counts};
-    if (letter !== null) {
-      this.counts[letter] -= 1;
+    // shallow-copy this so we can mutate it
+    this.letterCounts = {...this.letterCounts};
+    if (this.letter !== null) {
+      // remove letter from available letters
+      this.letterCounts[this.letter] -= 1;
     }
-    this.counts = Object.freeze(this.counts);
+    // make it read-only
+    this.letterCounts = Object.freeze(this.letterCounts);
   }
 }
 
+// create a counter of the letters/chars that appear in a string
+// TODO: simplify this with mnemonist's DefaultMap
+// (https://yomguithereal.github.io/mnemonist/default-map#autoincrement)
 function counter(s: string): Record<string, number> {
   let counts: Record<string, number> = {};
   for (let char of s) {
@@ -107,6 +113,7 @@ export class Dictionary {
     return high;
   }
 
+  // get all words that have the given letter at the given index
   private getRange(letter: string, at: number): Set<string> {
     const gsa = this.gsaByPosition[at];
     const first = this.findFirst(letter, at);
@@ -121,6 +128,9 @@ export class Dictionary {
     return set;
   }
 
+  // get all words that *don't* have any of the given letters at the given index
+  // and group them by letter
+  // (this is unused for now)
   private getGroupedRangeWithout(letters: string[], at: number): [string, Set<string>][] {
     const gsa = this.gsaByPosition[at];
     let ranges = [
@@ -151,8 +161,9 @@ export class Dictionary {
 
     return Object.entries(sets);
   }
-  
-  private getUngroupedRangeWithout(letters: string[], at: number): Set<string> {
+
+  // get all words that *don't* have any of the given letters at the given index
+  private getRangeWithout(letters: string[], at: number): Set<string> {
     const gsa = this.gsaByPosition[at];
     let ranges = [
       -1,
@@ -177,54 +188,68 @@ export class Dictionary {
     return set;
   }
 
-  private handleLetter(at: number, letter: string, state: State, soFar: Record<string, number>): Node[] {
+  // soFar stores the state of the solve 'so far', i.e. all seen letters
+  // it starts out as a map of the original word produced by counter()
+  // (so for example the word 'banal' would start as {b: 1, a: 2, n: 1, l: 1})
+  // but every time we exhaust a letter its value gets decremented by one
+  private handleLetter(at: number, letter: string, state: State, soFar: Record<string, number>): Possibility[] {
     switch (state) {
+      // 'Right' means we want a word that has this letter at this exact index
       case State.Right: {
-        return [new Node(letter, this.getRange(letter, at), soFar)];
+        return [new Possibility(letter, this.getRange(letter, at), soFar)];
       }
 
+      // 'Elsewhere' means we want a word that has this letter, but not at this index
+      // Wordle's rules make that tricky, though: if we've already used this letter
+      // as many times as it appears in the original word, it doesn't count as 'Elsewhere'
+      // but as 'Wrong'
       case State.Elsewhere: {
+        // l !== letter: we don't want to return words that have this letter at this index ofc
+        // soFar[l] > 0: we also don't want words that have letters we've already used up
         const allowed = Object.keys(soFar).filter(l => l !== letter && soFar[l] > 0);
-        return allowed.map(l => new Node(l, this.getRange(l, at), soFar));
+        return allowed.map(l => new Possibility(l, this.getRange(l, at), soFar));
       }
 
+      // these mean we want a word that doesn't have this letter anywhere
       default:
       case State.Empty:
       case State.Wrong: {
         const exclude = Object.keys(soFar).filter(l => soFar[l] > 0);
-        return [
-          new Node(null, this.getUngroupedRangeWithout(exclude, at), soFar)
-        ];
+        return [new Possibility(null, this.getRangeWithout(exclude, at), soFar)];
       }
     }
   }
 
   match(pattern: State[], word: string): Set<string> {
-    // we want to start with the most-constraining states and then broaden
+    // we want to start with the most-constraining states and then broaden out
     // e.g. locking in green cells first lets us narrow yellow cells' constraints down
     // and the same in turn applies to yellow => black
-    const sortedStates = pattern
+    const [firstIndex, ...sortedIndices] = pattern
       .map((_, idx) => idx)
       .sort((a, b) => pattern[b] - pattern[a]);
-    let counts = counter(word);
-    const matches: Node[][] = Array.from({length: pattern.length});
 
-    sortedStates.forEach((idx, iteration) => {
+    // this part is basically a giant reduce loop
+    // `possibilities` is the accumulator / holds all possible words at each iteration
+    // and slowly gets whittled down until we reach the end, where it'll store all results
+    let counts = counter(word);
+    let possibilities: Possibility[] = this.handleLetter(firstIndex, word[firstIndex], pattern[firstIndex], counts);
+
+    sortedIndices.forEach(idx => {
       const state = pattern[idx];
       const letter = word[idx];
-      
-      let possibilities: Node[];
-      if (iteration === 0) {
-        possibilities = this.handleLetter(idx, letter, state, counts);
-      } else {
-        possibilities = matches[sortedStates[iteration - 1]].flatMap(
-          node => this.handleLetter(idx, letter, state, node.counts)
-        );
-      }
 
-      matches[idx] = possibilities.filter(node => node.set.size > 0);
+      possibilities = possibilities
+        .flatMap(ogPossibility => {
+          let newPossibilities = this.handleLetter(idx, letter, state, ogPossibility.letterCounts);
+          newPossibilities.forEach(newPossibility => Sets.intersect(newPossibility.set, ogPossibility.set));
+          return newPossibilities;
+        }).filter(
+          possibility => possibility.set.size > 0
+        );
     });
 
-    return Sets.intersection(...matches.map(nodes => Sets.union(EMPTY_SET, ...nodes.map(node => node.set))));
+    // the two EMPTY_SETS are there just in case there are no results
+    // (Sets.union() needs at least two arguments so this is a lazy workaround)
+    return Sets.union(EMPTY_SET, EMPTY_SET, ...possibilities.map(possibility => possibility.set));
   }
 }
