@@ -30,32 +30,70 @@
     background-color: var(--black);
 }
 
-button, button::after {
-    transition: font-size 100ms;
-    font-size: x-large;
+button {
+    &::after {
+        transition: font-size 100ms;
+        font-size: x-large;
 
-    @media screen and (max-height: 600px), screen and (max-width: 600px) {
-      font-size: large;
-    }
-      
-    @media screen and (max-height: 550px), screen and (max-width: 500px) {
-      font-size: medium;
+        @media screen and (max-height: 710px), screen and (max-width: 600px) {
+            font-size: large;
+        }
+        
+        @media screen and (max-height: 570px), screen and (max-width: 500px) {
+            font-size: smaller;
+        }
+
+        @media screen and (max-height: 470px), screen and (max-width: 400px) {
+            font-size: x-small;
+        }
+
+        @media screen and (max-height: 300px), screen and (max-width: 300px) {
+            font-size: xx-small;
+        }
     }
 
-    @media screen and (max-height: 400px), screen and (max-width: 400px) {
-      font-size: small;
+    &:active::after {
+        font-size: medium;
+        
+        @media screen and (max-height: 710px), screen and (max-width: 600px) {
+            font-size: medium;
+        }
+        
+        @media screen and (max-height: 570px), screen and (max-width: 500px) {
+            font-size: x-small;
+        }
+        
+        @media screen and (max-height: 470px), screen and (max-width: 400px) {
+            font-size: xx-small;
+        }
+
+        @media screen and (max-height: 300px), screen and (max-width: 300px) {
+            font-size: 5px;
+        }
     }
 }
+
+
 
 :root, input, textarea {
     font-size: xx-large;
 
-    @media screen and (max-height: 550px), screen and (max-width: 500px) {
+    @media screen and (max-height: 700px), screen and (max-width: 500px) {
         font-size: x-large;
     }
 
-    @media screen and (max-height: 400px), screen and (max-width: 400px) {
-        font-size: medium;
+    @media screen and (max-height: 470px), screen and (max-width: 400px) {
+        font-size: small;
+    }
+
+    @media screen and (max-height: 320px), screen and (max-width: 300px) {
+        font-size: xx-small;
+    }
+}
+
+input[type="radio"] {
+    @media screen and (max-height: 300px) {
+        font-size: 0;
     }
 }
 

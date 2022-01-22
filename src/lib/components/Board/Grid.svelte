@@ -183,7 +183,7 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
     &:nth-last-child(2) .clear::after {
       content: "💥\A⬅️";
 
-      @media screen and (max-height: 500px), screen and (max-width: 500px) {
+      @media screen and (max-height: 550px), screen and (max-width: 500px) {
         content: "⬅️💥";
       }
     }
@@ -197,7 +197,7 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
         letter-spacing: -3px;
         white-space: pre;
 
-        @media screen and (max-height: 500px), screen and (max-width: 500px) {
+        @media screen and (max-height: 550px), screen and (max-width: 500px) {
           content: "↙️💥";
         }
       }
