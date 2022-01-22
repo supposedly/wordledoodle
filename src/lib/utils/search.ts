@@ -53,7 +53,7 @@ export class Dictionary {
     public readonly dictionary: string[],
     public readonly wordLength: number
   ) {
-    this.dictionary.sort();
+    this.dictionary = [...this.dictionary].sort();
     this.gsaWordLength = 1 + this.wordLength;
 
     const gsa = new GeneralizedSuffixArray(this.dictionary);

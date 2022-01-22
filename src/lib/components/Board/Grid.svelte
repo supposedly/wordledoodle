@@ -25,7 +25,9 @@
 
   $: if (possibleSolves.length > 0) {
     patterns.forEach((cells, row) => cells.forEach((cell, col) => {
-      cell.value = possibleSolves[row][col];
+      if (possibleSolves[row]) {
+        cell.value = possibleSolves[row][col];
+      }
     }));
     patterns = patterns;
   }
