@@ -1,6 +1,8 @@
 <script lang="ts">
   import { State, CSSState } from '../../utils/types';
 
+  import { createEventDispatcher } from 'svelte';
+
   export let ter: string | null;
   export let state: State;
   export let defaultState: State;
@@ -15,7 +17,12 @@
           return;
       }
       state = paintState;
-  }
+  } 
+  
+  const dispatcher = createEventDispatcher();
+  const stateChange = () => dispatcher('statechange');
+
+  $: state, stateChange();
 </script>
 
 <div class:disabled class={`tile ${CSSState[state || defaultState].toLowerCase()}`}

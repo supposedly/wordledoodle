@@ -5,9 +5,7 @@ Doodle on a Wordle grid and get your drawing filled in with the right words.
 ## To do
 
 ### Important
-- Delete solved letters from grid on draw
 - Default to number input & fill in the current number from the date
-- Forbid drawing below an all-green row
 
 ### Later than sooner than later
 - Use all three of Wordle's color schemes
@@ -59,9 +57,10 @@ words longer than 5 letters or a way-larger dictionary.
 ### To do too (two)
 
 #### Significant
-1. Figure out the best way to cache searches for `Wrong` letters (would be fixable easily by making getRangeWithout() determine
+1. Cache the result of the set=>array conversion needed to pick a random value out of a set in JS
+2. Figure out the best way to cache searches for `Wrong` letters (would be fixable easily by making getRangeWithout() determine
    letters instead of indices and then just rely on getRange() + its cache)
-2. Mayyyyybe sort letters in ascending order of the size of the set(s) they'd produce (e.g. sort `Right`s by their frequency in
+3. Mayyyyybe sort letters in ascending order of the size of the set(s) they'd produce (e.g. sort `Right`s by their frequency in
    English and `Elsewhere`s by the combined frequency of their alternatives?) to maximally trim the search space, but meh
 
 #### Unimportant optimizations

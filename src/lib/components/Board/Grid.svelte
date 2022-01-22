@@ -14,7 +14,7 @@
   export let length = 5;
   export let height = 6;
   export let paintState: State;
-  let fullySolvedRow: number = 0;
+  let fullySolvedRow: number = height;
 
   $: gameWidth = 1 + length;
   $: gameHeight = 1 + height;
@@ -44,11 +44,13 @@
         break;
       }
     }
-    fullySolvedRow = i;
+    fullySolvedRow = i || height;
 
-    for (i = patterns.length - 1; i > 0; i--) {
+    for (i = patterns.length - 1; i >= 0; i--) {
       if (i > fullySolvedRow) {
         patterns[i] = patterns[i].map(state => state === State.Wrong ? State.Empty : state);
+      } else {
+        patterns[i] = patterns[i].map(state => state === State.Empty ? State.Wrong : state);
       }
     }
 
@@ -113,6 +115,13 @@ function paintByTouch(e: TouchEvent) {
   }
 }
 
+function rowChanged(row: number) {
+  if (possibleSolves[row]) {
+    possibleSolves[row] = '';
+    possibleSolves = possibleSolves;
+  }
+}
+
 const dispatcher = createEventDispatcher();
 const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('solve', {answer, patterns});
 </script>
@@ -127,21 +136,22 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
   on:touchmove|preventDefault={paintByTouch}
 >
   {#each patterns as word, row}
-    <div class="row" class:shaking={shakingRows[row]}>
+    <div class="row" class:shaking={shakingRows[row] && word[0] !== State.Empty}> <!-- dumb thing to avoid shaking empty rows -->
       {#each word as state, idx}
         <Cell
-          bind:state={state}
+          bind:state
           ter={(possibleSolves[row] || '')[idx]}
           defaultState={row <= fullySolvedRow ? State.Wrong : State.Empty}
           disabled={row > fullySolvedRow}
           {paintState}
+          on:statechange={() => { rowChanged(row); }}
         />
       {/each}
       <button
         class="clear"
-        title="Clear all rows from here on down"
+        title="Clear this row"
         disabled={row > fullySolvedRow}
-        on:click={() => word = clearRow(word)}
+        on:click={() => { word = clearRow(word); rowChanged(row); }}
       ></button>
     </div>
   {/each}

@@ -235,13 +235,17 @@ export class Dictionary {
         return allowed.map(l => new Possibility(l, this.getRange(l, at), soFar));
       }
 
-      // these mean we want a word that doesn't have this letter anywhere
+      // this means we want a word that doesn't have this letter anywhere
       // or one in which we've already used this letter all the way up
-      default:
-      case State.Empty:
       case State.Wrong: {
         const exclude = Object.keys(soFar).filter(l => soFar[l] > 0);
         return [new Possibility(null, this.getRangeWithout(exclude, at), soFar)];
+      }
+
+      // otherwise nothing
+      default:
+      case State.Empty: {
+        return [];
       }
     }
   }
