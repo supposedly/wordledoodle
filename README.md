@@ -4,9 +4,10 @@ Doodle on a Wordle grid and get your drawing filled in with the right words.
 
 ## To do
 
-### Urgent
-- Display solved letters on grid
+### Important
+- Delete solved letters from grid on draw
 - Default to number input & fill in the current number from the date
+- Forbid drawing below an all-green row
 
 ### Later than sooner than later
 - Use all three of Wordle's color schemes

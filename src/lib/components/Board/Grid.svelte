@@ -17,10 +17,18 @@
   export let paintState: State;
   let highestEmptyRow: number = 0;
 
-  export const patterns: CellValue[][] = Array.from(
+  export let possibleSolves: string[];
+  let patterns = Array.from(
     {length: height},
     _ => Array.from({length}, _ => ({state: BlankState, value: null}))
-  );
+  ) as CellValue[][];
+
+  $: if (possibleSolves.length > 0) {
+    patterns.forEach((cells, row) => cells.forEach((cell, col) => {
+      cell.value = possibleSolves[row][col];
+    }));
+    patterns = patterns;
+  }
 
   $: {
     let i: number;

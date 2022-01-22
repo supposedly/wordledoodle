@@ -17,18 +17,22 @@
   const SHAKE_DURATION = 250;
   let shaking = false;
 
+  let possibleSolves: string[] = [];
+
   function solve(message: CustomEvent<{answer: string, patterns: CellValue[][]}>) {
     if (!dictionary.has(message.detail.answer)) {
       error('Not in word list');
       return;
     }
-    console.log(
-      message.detail.patterns.map(
-        pattern => dictionary.match(
-          pattern.map(({state}) => state),
-          message.detail.answer
-        )
+    possibleSolves = message.detail.patterns.map(
+      pattern => dictionary.match(
+        pattern.map(({state}) => state),
+        message.detail.answer
       )
+    ).map(set =>
+      // this is the worst :---------|
+      // getting random element out of a set should be constant-time
+      [...set][Math.floor(Math.random() * set.size)]
     );
   }
 
@@ -48,7 +52,7 @@
   <Picker bind:paintState />
   <section class="item-center container" bind:clientHeight={containerHeight}>
     <ToastContainer {toaster}/>
-    <Grid {containerHeight} {paintState} {shaking} on:solve={solve} />
+    <Grid {containerHeight} {paintState} {shaking} {possibleSolves} on:solve={solve} />
   </section>
 </article>
 
