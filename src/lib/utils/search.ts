@@ -47,24 +47,26 @@ export class Dictionary {
   //    adding to a set
   private gsaByPosition: {suffixes: number[], ranges: LRUCache<string, string[]>}[];
   private gsaText: string;
+  private readonly gsaWordLength;
 
   constructor(
     public readonly dictionary: string[],
-    public readonly wordLength: number = 5
+    public readonly wordLength: number
   ) {
     this.dictionary.sort();
-    const gsa = new GeneralizedSuffixArray(this.dictionary);
-    const gsaWordLength = 1 + this.wordLength;
+    this.gsaWordLength = 1 + this.wordLength;
 
-    // asserting string bc this.dictionary's type makes string[] impossible
+    const gsa = new GeneralizedSuffixArray(this.dictionary);
+
+    // asserting `string` bc this.dictionary's type makes `string[]` impossible
     this.gsaText = gsa.text as string;
-    this.gsaByPosition = Array.from({length: gsaWordLength}, () => ({
+    this.gsaByPosition = Array.from({length: this.gsaWordLength}, () => ({
       suffixes: [],
       ranges: new LRUCache(LRU_CAPACITY)
     }));
 
     for (let value of gsa.array) {
-      this.gsaByPosition[value % gsaWordLength].suffixes.push(value);
+      this.gsaByPosition[value % this.gsaWordLength].suffixes.push(value);
     }
   }
 
@@ -140,12 +142,14 @@ export class Dictionary {
 
       let words: string[] = [];
       for (let idx = first; idx < last; idx++) {
-        words.push(dictionary[Math.floor(gsa[idx] / 6)]);
+        words.push(dictionary[Math.floor(gsa[idx] / this.gsaWordLength)]);
       }
       cache.set(letter, words);
     }
 
-    return new Set(cache.get(letter));
+    // asserting `string[]` (even though it's not necessary now that I'm returning a Set instead
+    // of a string[]) because we just made it impossible for cache.get() to be `undefined`
+    return new Set(cache.get(letter) as string[]);
   }
 
   // get all words that *don't* have any of the given letters at the given index
@@ -170,7 +174,7 @@ export class Dictionary {
       const first = ranges[i] + 1, last = ranges[i + 1];
 
       for (let idx = first; idx < last; idx++) {
-        const word = dictionary[Math.floor(gsa[idx] / 6)];
+        const word = dictionary[Math.floor(gsa[idx] / this.gsaWordLength)];
         const letter = word[at];
         if (!Object.hasOwnProperty.call(sets, letter)) {
           sets[letter] = new Set();
@@ -202,7 +206,7 @@ export class Dictionary {
       // 'last' is the last character before one of the excluded ones
       const first = ranges[i] + 1, last = ranges[i + 1];
       for (let idx = first; idx < last; idx++) {
-        set.add(dictionary[Math.floor(gsa[idx] / 6)]);
+        set.add(dictionary[Math.floor(gsa[idx] / this.gsaWordLength)]);
       }
     }
 
