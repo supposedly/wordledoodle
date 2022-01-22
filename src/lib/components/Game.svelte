@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { State, CellValue } from '../utils/types';
+  import type { State } from '../utils/types';
   import type { Dictionary } from '../utils/search';
   
   import Grid from './Board/Grid.svelte';
@@ -20,14 +20,14 @@
 
   let possibleSolves: string[] = [];
 
-  function solve(message: CustomEvent<{answer: string, patterns: CellValue[][]}>) {
+  function solve(message: CustomEvent<{answer: string, patterns: State[][]}>) {
     if (!dictionary.has(message.detail.answer)) {
       error('Not in word list');
       return;
     }
     possibleSolves = message.detail.patterns.map(
       pattern => dictionary.match(
-        pattern.map(({state}) => state),
+        pattern,
         message.detail.answer
       )
     ).map(set =>

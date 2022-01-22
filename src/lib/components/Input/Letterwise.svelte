@@ -188,9 +188,8 @@
     background-color: var(--white);
     text-align: center;
     color: var(--dark-gray);
-    font-size: 1.5em;
-      text-transform: uppercase;
-      font-weight: bold;
+    text-transform: uppercase;
+    font-weight: bold;
 
     &::placeholder {
       opacity: 60%;

@@ -26,9 +26,36 @@
 
 :root, input, textarea, button {
     font-family: 'Clear Sans', 'Helvetica Neue', Arial, sans-serif;
-    font-size: 16px;
-    // color: var(--white);
+    transition: font-size 100ms;
     background-color: var(--black);
+}
+
+button, button::after {
+    font-size: x-large;
+
+    @media screen and (max-height: 600px), screen and (max-width: 400px) {
+      font-size: large;
+    }
+      
+    @media screen and (max-height: 550px), screen and (max-width: 300px) {
+      font-size: medium;
+    }
+
+    @media screen and (max-height: 400px), screen and (max-width: 200px) {
+      font-size: small;
+    }
+}
+
+:root, input, textarea {
+    font-size: xx-large;
+
+    @media screen and (max-height: 550px), screen and (max-width: 400px) {
+        font-size: x-large;
+    }
+
+    @media screen and (max-height: 550px), screen and (max-width: 400px) {
+        font-size: medium;
+    }
 }
 
 :root, .dark {
@@ -47,20 +74,20 @@
 }
 
 button, input[type=radio] {
-  background: linear-gradient(0deg, transparent 0%, transparent 50%, rgba(185, 185, 185, 0.5) 100%);
-  box-shadow: inset var(--black) 0px 0px 2px 0px, #000 0px 2px 5px 0px;
-  border: none;
-  transition: box-shadow, font-size, filter, color;
-  transition-duration: 75ms;
+    background: linear-gradient(0deg, transparent 0%, transparent 50%, rgba(185, 185, 185, 0.5) 100%);
+    box-shadow: inset var(--black) 0px 0px 2px 0px, #000 0px 2px 5px 0px;
+    border: none;
+    transition: box-shadow, font-size, filter, color;
+    transition-duration: 75ms;
 
-  &:hover {
-      filter: brightness(140%);
-      color: var(--black);
-  }
+    &:hover {
+        filter: brightness(140%);
+        color: var(--black);
+    }
 
-  &:active {
-      font-size: 0.8em;
-      filter: brightness(120%);
-      box-shadow: inset #000 0px 2px 5px 1px;
-  }
+    &:active {
+        font-size: 0.8em;
+        filter: brightness(120%);
+        box-shadow: inset #000 0px 2px 5px 1px;
+    }
 }

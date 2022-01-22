@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { State, type CellValue } from '../../utils/types';
+  import { State } from '../../utils/types';
   import Cell from './Cell.svelte';
   import Letterwise from '../Input/Letterwise.svelte';
   import { createEventDispatcher } from 'svelte';
@@ -21,22 +21,13 @@
   export let possibleSolves: string[];
   let patterns = Array.from(
     {length: height},
-    _ => Array.from({length}, _ => ({state: BlankState, value: null}))
-  ) as CellValue[][];
-
-  $: if (possibleSolves.length > 0) {
-    patterns.forEach((cells, row) => cells.forEach((cell, col) => {
-      if (possibleSolves[row]) {
-        cell.value = possibleSolves[row][col];
-      }
-    }));
-    patterns = patterns;
-  }
+    _ => Array.from({length}, _ => BlankState)
+  );
 
   $: {
     let i: number;
     for (i = 0; i < patterns.length; i++) {
-      if (patterns[i].every(letter => letter.state === BlankState)) {
+      if (patterns[i].every(state => state === BlankState)) {
         break;
       }
     }
@@ -44,15 +35,15 @@
 
     for (i = patterns.length - 1; i > 0; i--) {
       if (i > highestEmptyRow) {
-        patterns[i].forEach(letter => letter.state = BlankState);
-        patterns[i] = patterns[i];
+        patterns[i] = patterns[i].map(() => BlankState);
       }
     }
+
+    patterns = patterns;
   }
 
-  function updateRow(word: CellValue[]) {
-    word.forEach(letter => letter.state = BlankState);
-    return word;
+  function clearRow(word: State[]) {
+    return word.map(() => BlankState);
   }
 
   export let containerHeight: number;
@@ -124,10 +115,10 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
 >
   {#each patterns as word, row}
     <div class="row">
-      {#each word as letter}
+      {#each word as state, idx}
         <Cell
-          bind:state={letter.state}
-          bind:ter={letter.value}
+          bind:state={state}
+          ter={(possibleSolves[row] || '')[idx]}
           defaultState={row < highestEmptyRow ? State.Wrong : BlankState}
           disabled={row > highestEmptyRow}
           {paintState}
@@ -137,7 +128,7 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
         class="clear"
         title="Clear all rows from here on down"
         disabled={row > highestEmptyRow}
-        on:click={() => word = updateRow(word)}
+        on:click={() => word = clearRow(word)}
       ></button>
     </div>
   {/each}
@@ -219,23 +210,6 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
     &:disabled, &[disabled] /* just paranoia, in reality the :disabled suffices except on IE */ {
       pointer-events: none;
     }
-
-    &::after {
-      transition: font-size 500ms;
-      font-size: large;
-
-      @media screen and (max-height: 600px), screen and (max-width: 400px) {
-        font-size: medium;
-      }
-        
-      @media screen and (max-height: 550px), screen and (max-width: 300px) {
-        font-size: small;
-      }
-
-      @media screen and (max-height: 400px), screen and (max-width: 200px) {
-        font-size: x-small;
-      }
-    }
   }
 
   form.row {
@@ -247,7 +221,6 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
 
       &::after {
         content: "🎲";
-        font-size: 1.5em;
       }
     }
   }

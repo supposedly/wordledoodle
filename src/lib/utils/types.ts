@@ -11,5 +11,3 @@ export enum CSSState {
   Present,
   Correct
 };
-
-export type CellValue = {state: State, value: string | null};
