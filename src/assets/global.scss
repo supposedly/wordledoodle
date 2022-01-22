@@ -31,17 +31,18 @@
 }
 
 button, button::after {
+    transition: font-size 100ms;
     font-size: x-large;
 
-    @media screen and (max-height: 600px), screen and (max-width: 400px) {
+    @media screen and (max-height: 600px), screen and (max-width: 600px) {
       font-size: large;
     }
       
-    @media screen and (max-height: 550px), screen and (max-width: 300px) {
+    @media screen and (max-height: 550px), screen and (max-width: 500px) {
       font-size: medium;
     }
 
-    @media screen and (max-height: 400px), screen and (max-width: 200px) {
+    @media screen and (max-height: 400px), screen and (max-width: 400px) {
       font-size: small;
     }
 }
@@ -49,11 +50,11 @@ button, button::after {
 :root, input, textarea {
     font-size: xx-large;
 
-    @media screen and (max-height: 550px), screen and (max-width: 400px) {
+    @media screen and (max-height: 550px), screen and (max-width: 500px) {
         font-size: x-large;
     }
 
-    @media screen and (max-height: 550px), screen and (max-width: 400px) {
+    @media screen and (max-height: 400px), screen and (max-width: 400px) {
         font-size: medium;
     }
 }

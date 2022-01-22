@@ -18,6 +18,11 @@
   export let paintState: State;
   let highestEmptyRow: number = 0;
 
+  $: gameWidth = 1 + length;
+  $: gameHeight = 1 + height;
+  $: gameRatio = gameWidth / gameHeight;
+  $: minGameWidth = Math.min(containerWidth, 350);
+
   export let possibleSolves: string[];
   let patterns = Array.from(
     {length: height},
@@ -54,18 +59,18 @@
 
   $: {
     if (!receivedContainerHeight && containerHeight !== undefined) {
-      const width = Math.min(Math.floor(containerHeight * (5 / 6)), containerWidth);
-      boardWidth = tweened(Math.min(Math.floor(containerHeight * (5 / 6)), containerWidth), {duration: 100});
-      boardHeight = tweened(6 * Math.floor(width / 5), {duration: 100});
+      const width = Math.min(Math.floor(containerHeight * gameRatio), containerWidth);
+      boardWidth = tweened(width, {duration: 100});
+      boardHeight = tweened(gameHeight * Math.floor(width / gameWidth), {duration: 100});
       receivedContainerHeight = true;
     }
   }
 
   $: {
     if (receivedContainerHeight) {
-      const width = Math.min(Math.floor(containerHeight * (5 / 6)), containerWidth);
+      const width = Math.min(Math.floor(containerHeight * gameRatio), containerWidth);
       boardWidth = tweened(width, {duration: 100});
-      boardHeight = tweened(6 * Math.floor(width / 5), {duration: 100});
+      boardHeight = tweened(gameHeight * Math.floor(width / gameWidth), {duration: 100});
     }
   }
 
@@ -73,9 +78,9 @@
   function resizeBoard() {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => {
-      const width = Math.min(Math.floor(containerHeight * (5 / 6)), containerWidth);
+      const width = Math.min(Math.floor(containerHeight * gameRatio), containerWidth);
       boardWidth.set(width);
-      boardHeight.set(6 * Math.floor(width / 5));
+      boardHeight.set(gameHeight * Math.floor(width / gameWidth));
     }, 25);
   }
 
@@ -178,7 +183,7 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
     &:nth-last-child(2) .clear::after {
       content: "💥\A⬅️";
 
-      @media screen and (max-height: 500px) {
+      @media screen and (max-height: 500px), screen and (max-width: 500px) {
         content: "⬅️💥";
       }
     }
@@ -192,7 +197,7 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
         letter-spacing: -3px;
         white-space: pre;
 
-        @media screen and (max-height: 500px) {
+        @media screen and (max-height: 500px), screen and (max-width: 500px) {
           content: "↙️💥";
         }
       }
