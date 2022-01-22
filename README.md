@@ -1,48 +1,70 @@
-# Svelte + TS + Vite
+# [Wordle Doodle](https://supposedly.github.io/wordledoodle)
 
-This template should help get you started developing with Svelte and TypeScript in Vite.
+Doodle on a Wordle grid and get your drawing filled in with the right words.
 
-## Recommended IDE Setup
+## To do
 
-[VSCode](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+### Urgent
+- Display solved letters on grid
+- Default to number input & fill in the current number from the date
 
-## Need an official Svelte framework?
+### Later than sooner than later
+- Use all three of Wordle's color schemes
+- Copy over Wordle's fancy flip animations
+- Make the grid a lil bigger
 
-Check out [SvelteKit](https://github.com/sveltejs/kit#readme), which is also powered by Vite. Deploy anywhere with its serverless-first approach and adapt to various platforms, with out of the box support for TypeScript, SCSS, and Less, and easily-added support for mdsvex, GraphQL, PostCSS, Tailwind CSS, and more.
+## Technical bits
 
-## Technical considerations
+### Algorithm
+If anyone reading knows more than me and spots something inefficient or wrong here, please let me know! I'm not sure if there's
+a better alternative to the set stuff.
 
-**Why use this over SvelteKit?**
+Starting with a sorted dictionary of words that are all the same length...
+1. Concatenate the words together with an arbitrary out-of-alphabet delimiter, then construct a huge suffix array out of it.
+2. Go through the suffix array linearly and group the indices together based on each one's position within a word.  
+   (Since our words are all the same length, and the concatenation delimter adds 1 to that length, we can do this by just
+   grouping the indices by `index % (1 + wordLength)`)  
+   Since the original suffix array was sorted lexicographically, these suffix subarrays will remain sorted.
+3. When a row of green states (letters that are `Right`), yellow states (letters that are `Elsewhere`), and/or black states
+   (letters that are `Wrong`) needs to be solved for:
+    1. Start keeping a running set of possible solves.
+    2. Do all the `Right` letters first, since that's the narrowest state possible and helps us cut down a lot on our search space.
+       To process a `Right` letter, do two binary searches in the "suffix subarray" that matches its position: one search to find
+       the very first word that has it at that position, and another to find the very last word with it there. Grab those two
+       words and all of the ones in between them, then store them in a set.  
+       Take the intersection of that set with the running set of possible solves, then replace latter with it.  
+    3. Do the `Elsewhere`s next. To process one, take all of the target word's letters except the correct one for this position and
+       any that have already been used up, and for each one, collect the same type of word-set as for `Right` letters. Associate
+       all of those sets with this position, since they're all different possibilities.  
+       Once done, intersect the running set with each of these possibilities, and prune any intersections that end up empty.  
+       Make these intersections the new sets of possible solves. Make sure to associate each one with the letters it's consumed to
+       get there. We can't merge (union) all of these possibilities together because they represent different 'solve paths', aka
+       different sequences of consumed letters.
+    4. Finally, finish off by processing the `Wrong` letters. Unlike `Elsewhere`s, `Wrong`s don't need to pay attention to the letters
+       they're consuming: the same letter can be `Wrong` indefinitely many times, even though it can't be `Elsewhere` any more times
+       than it appears in the target word.  
+       To process a `Wrong` letter, create a set of all words in the dictionary **except** the ones that are still in the word and
+       haven't already been used all the way up. Intersect that set with each set out of the current possible solves.
+4. After all of that, the 'current possible solves' will consist of a bunch of different sets, each containing words that match
+   the requested pattern of states. Union all of those together and you have your set of results. (If there are no matches, it'll be
+   empty.) Pick a random one to finish the deed.
 
-- It brings its own routing solution which might not be preferable for some users.
-- It is first and foremost a framework that just happens to use Vite under the hood, not a Vite app.
-  `vite dev` and `vite build` wouldn't work in a SvelteKit environment, for example.
+\#2 could be simplified by constructing a suffix array that sorts by position before going lexicographically, but it didn't
+seem worth the trouble. It would come at the cost of a couple extra binary-search hops every time we need to find a letter.
 
-This template contains as little as possible to get started with Vite + TypeScript + Svelte, while taking into account the developer experience with regards to HMR and intellisense. It demonstrates capabilities on par with the other `create-vite` templates and is a good starting point for beginners dipping their toes into a Vite + Svelte project.
+Also, since Wordle's dictionary is only, like, 12k words, most of this is kind of overkill --
+a few linear regex searches on it would be quick enough to handle basically everything above. I just wanted to leave things open for
+words longer than 5 letters or a way-larger dictionary.
 
-Should you later need the extended capabilities and extensibility provided by SvelteKit, the template has been structured similarly to SvelteKit so that it is easy to migrate.
+### To do too (two)
 
-**Why `global.d.ts` instead of `compilerOptions.types` inside `jsconfig.json` or `tsconfig.json`?**
+#### Significant
+1. Figure out the best way to cache searches for `Wrong` letters (would be fixable easily by making getRangeWithout() determine
+   letters instead of indices and then just rely on getRange() + its cache)
+2. Mayyyyybe sort letters in ascending order of the size of the set(s) they'd produce (e.g. sort `Right`s by their frequency in
+   English and `Elsewhere`s by the combined frequency of their alternatives?) to maximally trim the search space, but meh
 
-Setting `compilerOptions.types` shuts out all other types not explicitly listed in the configuration. Using triple-slash references keeps the default TypeScript setting of accepting type information from the entire workspace, while also adding `svelte` and `vite/client` type information.
-
-**Why include `.vscode/extensions.json`?**
-
-Other templates indirectly recommend extensions via the README, but this file allows VS Code to prompt the user to install the recommended extension upon opening the project.
-
-**Why enable `allowJs` in the TS template?**
-
-While `allowJs: false` would indeed prevent the use of `.js` files in the project, it does not prevent the use of JavaScript syntax in `.svelte` files. In addition, it would force `checkJs: false`, bringing the worst of both worlds: not being able to guarantee the entire codebase is TypeScript, and also having worse typechecking for the existing JavaScript. In addition, there are valid use cases in which a mixed codebase may be relevant.
-
-**Why is HMR not preserving my local component state?**
-
-HMR state preservation comes with a number of gotchas! It has been disabled by default in both `svelte-hmr` and `@sveltejs/vite-plugin-svelte` due to its often surprising behavior. You can read the details [here](https://github.com/rixo/svelte-hmr#svelte-hmr).
-
-If you have state that's important to retain within a component, consider creating an external store which would not be replaced by HMR.
-
-```ts
-// store.ts
-// An extremely simple external store
-import { writable } from 'svelte/store'
-export default writable(0)
-```
+#### Unimportant optimizations
+1. Use `>>0` trick instead of `Math.floor()`
+2. Use classic for-loops more than `.forEach()`, `.map()`, etc.
+3. Don't bother `Object.freeze()`-ing `Possibility.letterCounts`
