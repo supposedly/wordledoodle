@@ -166,9 +166,6 @@
   const dispatch = () => dispatcher('solve', {answer: answer.join('')});
 </script>
 
-<!-- submit button -->
-<slot {valid} {dispatch}></slot>
-
 {#each placeholder as letter, idx}
   <input type="text" {maxlength} placeholder={letter} pattern="[a-zA-Z]"
     data-idx={idx}
@@ -177,6 +174,9 @@
     on:keydown={handleNonInput}
   >
 {/each}
+
+<!-- submit button -->
+<slot {valid} {dispatch}></slot>
 
 <style lang="scss">
   input {

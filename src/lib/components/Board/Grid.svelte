@@ -3,6 +3,7 @@
   import Cell from './Cell.svelte';
   import Letterwise from '../Input/Letterwise.svelte';
   import { createEventDispatcher } from 'svelte';
+  import { tweened } from 'svelte/motion';
 
   // not sure anymore whether making Empty the blank state is useful...
   // the minimum possible state once the game is actually solved will
@@ -34,9 +35,8 @@
 
   $: {
     let i: number;
-  
     for (i = 0; i < patterns.length; i++) {
-      if (patterns[i].every(letter => letter.state == BlankState)) {
+      if (patterns[i].every(letter => letter.state === BlankState)) {
         break;
       }
     }
@@ -56,12 +56,36 @@
   }
 
   export let containerHeight: number;
-  let boardWidth: number;
-  let boardHeight: number;
+  export let containerWidth: number;
+  let receivedContainerHeight = false;
+  let boardWidth = tweened(0);
+  let boardHeight = tweened(0);
 
+  $: {
+    if (!receivedContainerHeight && containerHeight !== undefined) {
+      const width = Math.min(Math.floor(containerHeight * (5 / 6)), containerWidth);
+      boardWidth = tweened(Math.min(Math.floor(containerHeight * (5 / 6)), containerWidth), {duration: 100});
+      boardHeight = tweened(6 * Math.floor(width / 5), {duration: 100});
+      receivedContainerHeight = true;
+    }
+  }
+
+  $: {
+    if (receivedContainerHeight) {
+      const width = Math.min(Math.floor(containerHeight * (5 / 6)), containerWidth);
+      boardWidth = tweened(width, {duration: 100});
+      boardHeight = tweened(6 * Math.floor(width / 5), {duration: 100});
+    }
+  }
+
+  let timeoutId: ReturnType<typeof setTimeout>;
   function resizeBoard() {
-    boardWidth = Math.min(Math.floor(containerHeight * (5 / 6)), 350);
-    boardHeight = 6 * Math.floor(boardWidth / 5);
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      const width = Math.min(Math.floor(containerHeight * (5 / 6)), containerWidth);
+      boardWidth.set(width);
+      boardHeight.set(6 * Math.floor(width / 5));
+    }, 25);
   }
 
   let initialized = false;
@@ -95,17 +119,11 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
   class="board"
   class:center={centerSelf}
   class:shaking
-  style="width: {boardWidth}px; height: {boardHeight}px;"
+  style="width: {$boardWidth}px; height: {$boardHeight}px;"
   on:touchmove|preventDefault={paintByTouch}
 >
   {#each patterns as word, row}
     <div class="row">
-      <button
-        class="clear"
-        title="Clear all rows from here on down"
-        disabled={row > highestEmptyRow}
-        on:click={() => word = updateRow(word)}
-      ></button>
       {#each word as letter}
         <Cell
           bind:state={letter.state}
@@ -115,6 +133,12 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
           {paintState}
         />
       {/each}
+      <button
+        class="clear"
+        title="Clear all rows from here on down"
+        disabled={row > highestEmptyRow}
+        on:click={() => word = updateRow(word)}
+      ></button>
     </div>
   {/each}
   <form class="row">
@@ -161,7 +185,11 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
     align-items: center;
 
     &:nth-last-child(2) .clear::after {
-      content: "❌\A➡️";
+      content: "💥\A⬅️";
+
+      @media screen and (max-height: 500px) {
+        content: "⬅️💥";
+      }
     }
 
     .clear {
@@ -169,9 +197,13 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
       font-size: min(3.5vh, 1em);
 
       &::after {
-        content: "❌\A↘️";
+        content: "💥\A↙️";
         letter-spacing: -3px;
         white-space: pre;
+
+        @media screen and (max-height: 500px) {
+          content: "↙️💥";
+        }
       }
     }
   }
@@ -179,12 +211,30 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
   button {
     width: 90%;
     height: 90%;
+    margin: 5px;
     border-radius: 5px;
     text-align: center;
     border: none;
 
     &:disabled, &[disabled] /* just paranoia, in reality the :disabled suffices except on IE */ {
       pointer-events: none;
+    }
+
+    &::after {
+      transition: font-size 500ms;
+      font-size: large;
+
+      @media screen and (max-height: 600px), screen and (max-width: 400px) {
+        font-size: medium;
+      }
+        
+      @media screen and (max-height: 550px), screen and (max-width: 300px) {
+        font-size: small;
+      }
+
+      @media screen and (max-height: 400px), screen and (max-width: 200px) {
+        font-size: x-small;
+      }
     }
   }
 

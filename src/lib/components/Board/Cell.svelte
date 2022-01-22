@@ -20,7 +20,7 @@
   on:mouseenter={paint}
   on:mousedown={paint}
   on:touchmove|preventDefault={() => { state = paintState; }}
-  >
+>
   <!--let-->{ter || ''}
 </div>
 

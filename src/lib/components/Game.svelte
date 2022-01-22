@@ -11,6 +11,7 @@
   export let dictionary: Dictionary;
 
   let containerHeight: number;
+  let containerWidth: number;
   let paintState: State;
 
   const toaster = new Toaster<string>();
@@ -50,9 +51,9 @@
 
 <article class="game" style="--shake-duration: {SHAKE_DURATION}ms">
   <Picker bind:paintState />
-  <section class="item-center container" bind:clientHeight={containerHeight}>
+  <section class="item-center container" bind:clientHeight={containerHeight} bind:clientWidth={containerWidth}>
     <ToastContainer {toaster}/>
-    <Grid {containerHeight} {paintState} {shaking} {possibleSolves} on:solve={solve} />
+    <Grid {containerHeight} {containerWidth} {paintState} {shaking} {possibleSolves} on:solve={solve} />
   </section>
 </article>
 
