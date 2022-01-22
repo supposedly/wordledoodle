@@ -5,42 +5,50 @@
   import { createEventDispatcher } from 'svelte';
   import { tweened } from 'svelte/motion';
 
-  // not sure anymore whether making Empty the blank state is useful...
-  // the minimum possible state once the game is actually solved will
-  // be State.Wrong anyway
-  const BlankState = State.Empty;
-  /* const BlankState = State.Wrong */
+  // TODO: import this
+  const SHAKE_DURATION = 250;
 
-  export let centerSelf = true;
+  export let unsolvableRows: number[];
   export let shaking = false;
+  export let centerSelf = true;
   export let length = 5;
   export let height = 6;
   export let paintState: State;
-  let highestEmptyRow: number = 0;
+  let fullySolvedRow: number = 0;
 
   $: gameWidth = 1 + length;
   $: gameHeight = 1 + height;
   $: gameRatio = gameWidth / gameHeight;
-  $: minGameWidth = Math.min(containerWidth, 350);
+
+  const ALL_FALSE = Array.from({length: height}, () => false);
+  let shakingRows: boolean[];
+  $: {
+    shakingRows = Array.from({length: height}, (_, idx) => unsolvableRows.includes(idx));
+    setTimeout(
+      () => { shakingRows = ALL_FALSE; },
+      SHAKE_DURATION
+    )
+  }
 
   export let possibleSolves: string[];
   let patterns = Array.from(
     {length: height},
-    _ => Array.from({length}, _ => BlankState)
+    _ => Array.from({length}, () => State.Empty)
   );
 
   $: {
+    // disable all rows below a fully-solved one (since wordle stops you from writing past that point)
     let i: number;
     for (i = 0; i < patterns.length; i++) {
-      if (patterns[i].every(state => state === BlankState)) {
+      if (patterns[i].every(state => state === State.Right)) {
         break;
       }
     }
-    highestEmptyRow = i;
+    fullySolvedRow = i;
 
     for (i = patterns.length - 1; i > 0; i--) {
-      if (i > highestEmptyRow) {
-        patterns[i] = patterns[i].map(() => BlankState);
+      if (i > fullySolvedRow) {
+        patterns[i] = patterns[i].map(state => state === State.Wrong ? State.Empty : state);
       }
     }
 
@@ -48,7 +56,7 @@
   }
 
   function clearRow(word: State[]) {
-    return word.map(() => BlankState);
+    return word.map(() => State.Empty);
   }
 
   export let containerHeight: number;
@@ -119,20 +127,20 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
   on:touchmove|preventDefault={paintByTouch}
 >
   {#each patterns as word, row}
-    <div class="row">
+    <div class="row" class:shaking={shakingRows[row]}>
       {#each word as state, idx}
         <Cell
           bind:state={state}
           ter={(possibleSolves[row] || '')[idx]}
-          defaultState={row < highestEmptyRow ? State.Wrong : BlankState}
-          disabled={row > highestEmptyRow}
+          defaultState={row <= fullySolvedRow ? State.Wrong : State.Empty}
+          disabled={row > fullySolvedRow}
           {paintState}
         />
       {/each}
       <button
         class="clear"
         title="Clear all rows from here on down"
-        disabled={row > highestEmptyRow}
+        disabled={row > fullySolvedRow}
         on:click={() => word = clearRow(word)}
       ></button>
     </div>
@@ -152,21 +160,23 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
 </div>
 
 <style lang="scss">
+
+  .board, .row {
+    transition: transform var(--shake-duration) cubic-bezier(0.5, 3, 0.5, -3);
+    transform: translateX(0);
+    &.shaking {
+      transform: translateX(15px);
+    }
+  }
   .board {
     display: grid;
     grid-template-rows: repeat(7, 1fr);
     grid-gap: 5px;
     padding: 10px;
     box-sizing: border-box;
-    transition: transform var(--shake-duration) cubic-bezier(0.5, 2, 0.5, -1);
-    transform: translateX(0);
 
     &.center {
       align-self: center;
-    }
-
-    &.shaking {
-      transform: translateX(15px);
     }
 
     * {
@@ -180,26 +190,13 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
     grid-gap: 5px;
     align-items: center;
 
-    &:nth-last-child(2) .clear::after {
-      content: "💥\A⬅️";
-
-      @media screen and (max-height: 550px), screen and (max-width: 500px) {
-        content: "⬅️💥";
-      }
-    }
-
     .clear {
       background-color: var(--black);
       font-size: min(3.5vh, 1em);
 
       &::after {
-        content: "💥\A↙️";
+        content: "❌";
         letter-spacing: -3px;
-        white-space: pre;
-
-        @media screen and (max-height: 550px), screen and (max-width: 500px) {
-          content: "↙️💥";
-        }
       }
     }
   }

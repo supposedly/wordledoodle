@@ -40,15 +40,15 @@ button {
         }
         
         @media screen and (max-height: 570px), screen and (max-width: 500px) {
-            font-size: smaller;
+            font-size: medium;
         }
 
         @media screen and (max-height: 470px), screen and (max-width: 400px) {
-            font-size: x-small;
+            font-size: small;
         }
 
         @media screen and (max-height: 300px), screen and (max-width: 300px) {
-            font-size: xx-small;
+            font-size: smaller;
         }
     }
 
@@ -60,15 +60,15 @@ button {
         }
         
         @media screen and (max-height: 570px), screen and (max-width: 500px) {
-            font-size: x-small;
+            font-size: small;
         }
         
         @media screen and (max-height: 470px), screen and (max-width: 400px) {
-            font-size: xx-small;
+            font-size: smaller;
         }
 
         @media screen and (max-height: 300px), screen and (max-width: 300px) {
-            font-size: 5px;
+            font-size: x-small;
         }
     }
 }
@@ -83,11 +83,11 @@ button {
     }
 
     @media screen and (max-height: 470px), screen and (max-width: 400px) {
-        font-size: small;
+        font-size: medium;
     }
 
     @media screen and (max-height: 320px), screen and (max-width: 300px) {
-        font-size: xx-small;
+        font-size: smaller;
     }
 }
 

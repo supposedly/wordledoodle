@@ -9,6 +9,7 @@
 <style lang="scss">
   li {
     background-color: var(--white);
+    font-size: 16px;
     opacity: 80%;
     font-weight: bold;
     text-align: center;

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { type State, CSSState } from '../../utils/types';
+  import { State, CSSState } from '../../utils/types';
 
   export let ter: string | null;
   export let state: State;
@@ -7,6 +7,8 @@
   export let paintState: State;
   
   export let disabled = false;
+  export let visible = true;
+  $: visible = !!ter;
 
   function paint(e: MouseEvent) {
       if (e.buttons !== 1) {
@@ -21,7 +23,9 @@
   on:mousedown={paint}
   on:touchmove|preventDefault={() => { state = paintState; }}
 >
-  <!--let-->{ter || ''}
+  {#if visible}
+    <!--let-->{ter}
+  {/if}
 </div>
 
 <style lang="scss">

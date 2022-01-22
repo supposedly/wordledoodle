@@ -18,6 +18,7 @@
   const SHAKE_DURATION = 250;
   let shaking = false;
 
+  let unsolvableRows: number[] = [];
   let possibleSolves: string[] = [];
 
   function solve(message: CustomEvent<{answer: string, patterns: State[][]}>) {
@@ -33,8 +34,10 @@
     ).map(set =>
       // this is the worst :---------|
       // getting random element out of a set should be constant-time
-      [...set][Math.floor(Math.random() * set.size)]
+      [...set][Math.floor(Math.random() * set.size)] || ''
     );
+
+    unsolvableRows = possibleSolves.map((_, row) => row).filter(row => !possibleSolves[row]);
   }
 
   function error(message: string) {
@@ -53,7 +56,7 @@
   <Picker bind:paintState />
   <section class="item-center container" bind:clientHeight={containerHeight} bind:clientWidth={containerWidth}>
     <ToastContainer {toaster}/>
-    <Grid {containerHeight} {containerWidth} {paintState} {shaking} {possibleSolves} on:solve={solve} />
+    <Grid {containerHeight} {containerWidth} {paintState} {shaking} {unsolvableRows} {possibleSolves} on:solve={solve} />
   </section>
 </article>
 
