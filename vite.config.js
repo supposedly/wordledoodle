@@ -10,9 +10,10 @@ export default defineConfig({
       name: `dictionary-loader`,
       transform(src, id) {
         if (/\.dictionary$/.test(id)) {
-          const dictionary = JSON.stringify(src.trim().split(' '));
+          const dictionary = src.trim().split(' ');
           return {
-            code: `export default ${dictionary}; export const wordLength = ${dictionary[0].length};`
+            code: `export default ${JSON.stringify(dictionary)}; export const wordLength = ${dictionary[0].length};`
+            // (wordLength more like wordleNgth amirite)
           };
         }
       }
