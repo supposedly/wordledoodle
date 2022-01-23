@@ -1,12 +1,12 @@
 <script lang="ts">
   import { State } from '../../utils/types';
+  import { SHAKE_DURATION } from '../../utils/constants';
+  
   import Cell from './Cell.svelte';
   import Letterwise from '../Input/Letterwise.svelte';
+
   import { createEventDispatcher } from 'svelte';
   import { tweened } from 'svelte/motion';
-
-  // TODO: import this
-  const SHAKE_DURATION = 250;
 
   export let unsolvableRows: number[];
   export let shaking = false;

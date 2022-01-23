@@ -1,16 +1,35 @@
 <script lang="ts">
   import { State, CSSState } from '../../utils/types';
+  import { FLIP_DURATION } from '../../utils/constants';
 
   import { createEventDispatcher } from 'svelte';
 
-  export let ter: string | null;
+  export let ter: string;
   export let state: State;
   export let defaultState: State;
   export let paintState: State;
   
   export let disabled = false;
-  export let visible = true;
-  $: visible = !!ter;
+  export let visible = false;
+
+  let displayedLetter: string;
+  let flipping = false;
+  let letterTimeout: ReturnType<typeof setTimeout>;
+  let flipTimeout: ReturnType<typeof setTimeout>;
+  $: {
+    flipping = true;
+
+    clearTimeout(letterTimeout);
+    letterTimeout = setTimeout(() => {
+      displayedLetter = ter;  // this entire block is reactive on `ter`
+      visible = !!displayedLetter;
+    }, FLIP_DURATION);
+
+    clearTimeout(flipTimeout);
+    flipTimeout = setTimeout(() => {
+      flipping = false;
+    }, FLIP_DURATION);
+  }
 
   function paint(e: MouseEvent) {
       if (e.buttons !== 1) {
@@ -25,13 +44,17 @@
   $: state, stateChange();
 </script>
 
-<div class:disabled class={`tile ${CSSState[state || defaultState].toLowerCase()}`}
+<div
+  class:disabled
+  class:flipping
+  class="tile {CSSState[state || defaultState].toLowerCase()}"
+  style="--flip-duration: {FLIP_DURATION}ms"
   on:mouseenter={paint}
   on:mousedown={paint}
   on:touchmove|preventDefault={() => { state = paintState; }}
 >
   {#if visible}
-    <!--let-->{ter}
+    {displayedLetter}
   {/if}
 </div>
 
@@ -78,6 +101,20 @@
     &.disabled {
       pointer-events: none;
       opacity: 50%;
+    }
+  }
+
+  // animation
+  .tile {
+    transition: transform;
+    transition-duration: 200ms;
+    transition-timing-function: ease-out;
+    transform: scaleY(100%);
+
+    &.flipping {
+      transition-timing-function: ease-in;
+      transition-duration: 100ms;
+      transform: scaleY(0);
     }
   }
 </style>

@@ -1,4 +1,4 @@
-import { GeneralizedSuffixArray, LRUCache, LRUMap } from 'mnemonist';
+import { GeneralizedSuffixArray, LRUCache } from 'mnemonist';
 import Sets from 'mnemonist/set';
 
 import { State } from './types';

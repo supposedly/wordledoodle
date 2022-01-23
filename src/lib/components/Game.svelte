@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { State } from '../utils/types';
   import type { Dictionary } from '../utils/search';
+  import { SHAKE_DURATION } from '../utils/constants';
   
   import Grid from './Board/Grid.svelte';
   import Picker from './Paint/Picker.svelte';
@@ -15,7 +16,6 @@
   let paintState: State;
 
   const toaster = new Toaster<string>();
-  const SHAKE_DURATION = 250;
   let shaking = false;
 
   let unsolvableRows: number[] = [];
