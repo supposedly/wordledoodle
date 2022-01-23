@@ -45,24 +45,24 @@ export class Dictionary {
   //    a lot faster than new Set(Set<string>) (probably a bug in engines but w/e)
   // 3. plus, pushing to an array to create it in the first place is ofc a lot faster than
   //    adding to a set
-  private gsaByPosition: {suffixes: number[], ranges: LRUCache<string, string[]>}[];
+  private gsaByPosition: {suffixes: number[], cache: LRUCache<string, string[]>}[];
   private gsaText: string;
   private readonly gsaWordLength;
 
   constructor(
-    public readonly dictionary: string[],
+    public readonly dictionary: readonly string[],
     public readonly wordLength: number
   ) {
     this.dictionary = [...this.dictionary].sort();
     this.gsaWordLength = 1 + this.wordLength;
 
-    const gsa = new GeneralizedSuffixArray(this.dictionary);
+    const gsa = new GeneralizedSuffixArray(this.dictionary as string[]);  // no harm done, GSA doesn't mutate
 
     // asserting `string` bc this.dictionary's type makes `string[]` impossible
     this.gsaText = gsa.text as string;
     this.gsaByPosition = Array.from({length: this.gsaWordLength}, () => ({
       suffixes: [],
-      ranges: new LRUCache(LRU_CAPACITY)
+      cache: new LRUCache(LRU_CAPACITY)
     }));
 
     for (let value of gsa.array) {
@@ -133,7 +133,7 @@ export class Dictionary {
 
   // get all words that have the given letter at the given index
   private getRange(letter: string, at: number): Set<string> {
-    const {suffixes: gsa, ranges: cache} = this.gsaByPosition[at];
+    const {suffixes: gsa, cache} = this.gsaByPosition[at];
 
     if (!cache.has(letter)) {
       const first = this.findFirst(letter, at);
@@ -153,41 +153,7 @@ export class Dictionary {
   }
 
   // get all words that *don't* have any of the given letters at the given index
-  // and group them by letter
-  // (this is unused for now)
-  private getGroupedRangeWithout(letters: string[], at: number): Record<string, Set<string>> {
-    const gsa = this.gsaByPosition[at].suffixes;
-    let ranges = [
-      -1,
-      ...letters
-        .map(l => [this.findFirst(l, at), this.findLast(l, at)])
-        .sort((a, b) => a[0] - b[0])
-        .flat(),
-      gsa.length
-    ];
-    const dictionary = this.dictionary;
-
-    let sets: Record<string, Set<string>> = {};
-    for (let i = 0; i < ranges.length; i += 2) {
-      // 'first' is the first character after one of the excluded ones,
-      // 'last' is the last character before one of the excluded ones
-      const first = ranges[i] + 1, last = ranges[i + 1];
-
-      for (let idx = first; idx < last; idx++) {
-        const word = dictionary[Math.floor(gsa[idx] / this.gsaWordLength)];
-        const letter = word[at];
-        if (!Object.hasOwnProperty.call(sets, letter)) {
-          sets[letter] = new Set();
-        }
-        sets[letter].add(word);
-      }
-    }
-
-    return sets;
-  }
-
-  // get all words that *don't* have any of the given letters at the given index
-  // TODO: figure out how to LRU-cache this...
+  // TODO: figure out how to cache this...
   private getRangeWithout(letters: string[], at: number): Set<string> {
     const gsa = this.gsaByPosition[at].suffixes;
     let ranges = [

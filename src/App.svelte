@@ -3,7 +3,7 @@
 
   import Game from './lib/components/Game.svelte';
   
-  import words, { wordLength } from './assets/wordle.dictionary';
+  import { words, wordLength } from './assets/wordle.dictionary';
   import './assets/global.scss';
 
   const dictionary = new Dictionary(words, wordLength);
