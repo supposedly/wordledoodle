@@ -17,7 +17,7 @@
   let letterTimeout: ReturnType<typeof setTimeout>;
   let flipTimeout: ReturnType<typeof setTimeout>;
   $: {
-    if (ter === null) {
+    if (ter === null || disabled) {
       // delete the letter instantly
       displayedLetter = '';
       visible = false;

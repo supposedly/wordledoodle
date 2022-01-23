@@ -38,13 +38,13 @@
 
   $: {
     // disable all rows below a fully-solved one (since wordle stops you from writing past that point)
-    let i: number;
+    let i = -1;
     for (i = 0; i < patterns.length; i++) {
       if (patterns[i].every(state => state === State.Right)) {
         break;
       }
     }
-    fullySolvedRow = i || height;
+    fullySolvedRow = i === -1 ? height : i;
 
     for (i = patterns.length - 1; i >= 0; i--) {
       if (i > fullySolvedRow) {
@@ -136,11 +136,11 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
   on:touchmove|preventDefault={paintByTouch}
 >
   {#each patterns as word, row}
-    <div class="row" class:shaking={shakingRows[row] && word[0] !== State.Empty}> <!-- dumb thing to avoid shaking empty rows -->
+    <div class="row" class:shaking={shakingRows[row] && word[0] !== State.Empty}> <!-- dumb thing to avoid making empty rows shake -->
       {#each word as state, idx}
         <Cell
           bind:state
-          ter={(possibleSolves[row] || console.log(possibleSolves[row]) || ['', '', '', '', ''])[idx]}
+          ter={possibleSolves[row][idx]}
           defaultState={row <= fullySolvedRow ? State.Wrong : State.Empty}
           disabled={row > fullySolvedRow}
           {paintState}
@@ -164,13 +164,12 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
       let:dispatch
       on:solve={solve}
     >
-      <button title="Solve for this word" on:click|preventDefault={() => dispatch()} disabled={!valid}></button>
+      <button title="Solve for matching words" on:click|preventDefault={() => dispatch()} disabled={!valid}></button>
     </Letterwise>
   </form>
 </div>
 
 <style lang="scss">
-
   .board, .row {
     transition: transform var(--shake-duration) cubic-bezier(0.5, 3, 0.5, -3);
     transform: translateX(0);

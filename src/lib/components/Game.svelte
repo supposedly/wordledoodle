@@ -27,10 +27,12 @@
   let possibleSolves: string[][] = Array.from({length: height}, () => [...EMPTY_ARRAY]);
 
   function solve(message: CustomEvent<{answer: string, patterns: State[][]}>) {
+    /*
     if (!dictionary.has(message.detail.answer)) {
       error('Not in word list');
       return;
     }
+    */
     possibleSolves = message.detail.patterns.map(
       pattern => dictionary.match(
         pattern,

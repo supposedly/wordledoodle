@@ -9,7 +9,6 @@ Doodle on a Wordle grid and get your drawing filled in with the right words.
 
 ### Later than sooner than later
 - Use all three of Wordle's color schemes
-- Copy over Wordle's fancy flip animations
 
 ## Technical bits
 
