@@ -137,12 +137,13 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
 >
   {#each patterns as word, row}
     <div class="row" class:shaking={shakingRows[row] && word[0] !== State.Empty}> <!-- dumb thing to avoid making empty rows shake -->
-      {#each word as state, idx}
+      {#each word as state, col}
         <Cell
           bind:state
-          ter={possibleSolves[row][idx]}
+          ter={possibleSolves[row][col]}
           defaultState={row <= fullySolvedRow ? State.Wrong : State.Empty}
           disabled={row > fullySolvedRow}
+          flipDelay={col * 25}
           {paintState}
           on:statechange={() => { rowChanged(row, false); }}
         />
@@ -205,7 +206,6 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
 
       &::after {
         content: "❌";
-        letter-spacing: -3px;
       }
     }
   }

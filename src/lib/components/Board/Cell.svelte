@@ -1,6 +1,6 @@
 <script lang="ts">
   import { State, CSSState } from '../../utils/types';
-  import { FLIP_IN_DURATION, FLIP_OUT_DURATION } from '../../utils/constants';
+  import { FLIP_IN_DURATION, FLIP_OUT_DURATION, FLIP_OUT_DELAY } from '../../utils/constants';
 
   import { createEventDispatcher } from 'svelte';
 
@@ -8,9 +8,9 @@
   export let state: State;
   export let defaultState: State;
   export let paintState: State;
+  export let flipDelay: number;
   
   export let disabled = false;
-  export let visible = false;
 
   let displayedLetter: string;
   let flipping = false;
@@ -20,7 +20,6 @@
     if (ter === null || disabled) {
       // delete the letter instantly
       displayedLetter = '';
-      visible = false;
     } else {
       // flip to change letters
       // (this branch is also triggered if ter === '')
@@ -29,13 +28,12 @@
       clearTimeout(letterTimeout);
       letterTimeout = setTimeout(() => {
         displayedLetter = ter || '';  // this entire block is reactive on `ter`
-        visible = !!ter;
-      }, FLIP_IN_DURATION);
+      }, FLIP_IN_DURATION + flipDelay + FLIP_OUT_DELAY);
   
       clearTimeout(flipTimeout);
       flipTimeout = setTimeout(() => {
         flipping = false;
-      }, FLIP_IN_DURATION);
+      }, FLIP_IN_DURATION + flipDelay + FLIP_OUT_DELAY);
     }
   }
 
@@ -56,12 +54,17 @@
   class:disabled
   class:flipping
   class="tile {CSSState[state || defaultState].toLowerCase()}"
-  style="--flip-in-duration: {FLIP_IN_DURATION}ms; --flip-out-duration: {FLIP_OUT_DURATION}ms"
   on:mouseenter={paint}
   on:mousedown={paint}
   on:touchmove|preventDefault={() => { state = paintState; }}
+  style="
+    --flip-in-duration: {FLIP_IN_DURATION}ms;
+    --flip-in-delay: {flipDelay}ms;
+    --flip-out-duration: {FLIP_OUT_DURATION}ms;
+    --flip-out-delay: {FLIP_OUT_DELAY}ms;
+  "
 >
-  {#if visible}
+  {#if displayedLetter && displayedLetter !== '\u200b'}
     {displayedLetter}
   {/if}
 </div>
@@ -83,12 +86,16 @@
     user-select: none;
     border: 2px solid;
 
-    transition: transform var(--flip-out-duration) ease-out, background-color 150ms, border-color 150ms;
+    transition: transform var(--flip-out-duration) ease-out var(--flip-out-delay),
+      background-color 150ms,
+      border-color 150ms;
 
     // animation
     transform: scaleY(100%);
     &.flipping {
-      transition: transform var(--flip-in-duration) ease-in, background-color 150ms, border-color 150ms;
+      transition: transform var(--flip-in-duration) var(--flip-in-delay) ease-in,
+        background-color 150ms,
+        border-color 150ms;
       transform: scaleY(0);
     }
 
