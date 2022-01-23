@@ -111,9 +111,13 @@ function paintByTouch(e: TouchEvent) {
   }
 }
 
-function rowChanged(row: number) {
+function rowChanged(row: number, flip: boolean) {
   if (possibleSolves[row]) {
-    possibleSolves[row] = possibleSolves[row].map(() => null);
+    possibleSolves[row] = possibleSolves[row].map(
+      flip
+      ? (letter => letter === '' ? '\u200b' : '')  // keep flipping forever by alternating btwn empty & zwsp
+      : () => null
+    );
     possibleSolves = possibleSolves;
   }
 }
@@ -140,14 +144,14 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
           defaultState={row <= fullySolvedRow ? State.Wrong : State.Empty}
           disabled={row > fullySolvedRow}
           {paintState}
-          on:statechange={() => { rowChanged(row); }}
+          on:statechange={() => { rowChanged(row, false); }}
         />
       {/each}
       <button
         class="clear"
         title="Clear this row"
         disabled={row > fullySolvedRow}
-        on:click={() => { word = clearRow(word); rowChanged(row); }}
+        on:click={() => { word = clearRow(word); rowChanged(row, true); }}
       ></button>
     </div>
   {/each}
