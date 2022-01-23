@@ -11,8 +11,8 @@
   export let unsolvableRows: number[];
   export let shaking = false;
   export let centerSelf = true;
-  export let length = 5;
-  export let height = 6;
+  export let length: number;
+  export let height: number;
   export let paintState: State;
   let fullySolvedRow: number = height;
 
@@ -30,7 +30,7 @@
     )
   }
 
-  export let possibleSolves: string[];
+  export let possibleSolves: (string | null)[][];
   let patterns = Array.from(
     {length: height},
     _ => Array.from({length}, () => State.Empty)
@@ -67,22 +67,18 @@
   let boardWidth = tweened(0);
   let boardHeight = tweened(0);
 
-  $: {
-    if (!receivedContainerHeight && containerHeight !== undefined) {
+  $: if (!receivedContainerHeight && containerHeight !== undefined) {
       const width = Math.min(Math.floor(containerHeight * gameRatio), containerWidth);
       boardWidth = tweened(width, {duration: 100});
       boardHeight = tweened(gameHeight * Math.floor(width / gameWidth), {duration: 100});
       receivedContainerHeight = true;
     }
-  }
 
-  $: {
-    if (receivedContainerHeight) {
+  $: if (receivedContainerHeight) {
       const width = Math.min(Math.floor(containerHeight * gameRatio), containerWidth);
       boardWidth = tweened(width, {duration: 100});
       boardHeight = tweened(gameHeight * Math.floor(width / gameWidth), {duration: 100});
     }
-  }
 
   let timeoutId: ReturnType<typeof setTimeout>;
   function resizeBoard() {
@@ -117,7 +113,7 @@ function paintByTouch(e: TouchEvent) {
 
 function rowChanged(row: number) {
   if (possibleSolves[row]) {
-    possibleSolves[row] = '';
+    possibleSolves[row] = possibleSolves[row].map(() => null);
     possibleSolves = possibleSolves;
   }
 }
@@ -140,7 +136,7 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
       {#each word as state, idx}
         <Cell
           bind:state
-          ter={(possibleSolves[row] || '')[idx]}
+          ter={(possibleSolves[row] || console.log(possibleSolves[row]) || ['', '', '', '', ''])[idx]}
           defaultState={row <= fullySolvedRow ? State.Wrong : State.Empty}
           disabled={row > fullySolvedRow}
           {paintState}

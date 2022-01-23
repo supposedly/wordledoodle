@@ -9,6 +9,9 @@
   import ToastContainer from './Notifications/Container.svelte';
   import { Toaster } from './Notifications/toaster';
 
+  const length = 5;
+  const height = 6;
+
   export let dictionary: Dictionary;
 
   let containerHeight: number;
@@ -18,8 +21,10 @@
   const toaster = new Toaster<string>();
   let shaking = false;
 
+  const EMPTY_ARRAY = Array.from({length: dictionary.wordLength}, () => '');
+
   let unsolvableRows: number[] = [];
-  let possibleSolves: string[] = [];
+  let possibleSolves: string[][] = Array.from({length: height}, () => [...EMPTY_ARRAY]);
 
   function solve(message: CustomEvent<{answer: string, patterns: State[][]}>) {
     if (!dictionary.has(message.detail.answer)) {
@@ -34,10 +39,12 @@
     ).map(set =>
       // this is the worst :---------|
       // getting random element out of a set should be constant-time
-      [...set][Math.floor(Math.random() * set.size)] || ''
+      [...set][Math.floor(Math.random() * set.size)]
+    ).map(
+      word => word ? [...word] : [...EMPTY_ARRAY]
     );
 
-    unsolvableRows = possibleSolves.map((_, row) => row).filter(row => !possibleSolves[row]);
+    unsolvableRows = possibleSolves.map((_, row) => row).filter(row => possibleSolves[row][0] === '');
   }
 
   function error(message: string) {
@@ -56,7 +63,15 @@
   <Picker bind:paintState />
   <section class="item-center container" bind:clientHeight={containerHeight} bind:clientWidth={containerWidth}>
     <ToastContainer {toaster}/>
-    <Grid {containerHeight} {containerWidth} {paintState} {shaking} {unsolvableRows} {possibleSolves} on:solve={solve} />
+    <Grid
+      {length} {height}
+      {containerHeight} {containerWidth}
+      {paintState}
+      {shaking}
+      {unsolvableRows}
+      {possibleSolves}
+      on:solve={solve}
+    />
   </section>
 </article>
 

@@ -1,10 +1,10 @@
 <script lang="ts">
   import { State, CSSState } from '../../utils/types';
-  import { FLIP_DURATION } from '../../utils/constants';
+  import { FLIP_IN_DURATION, FLIP_OUT_DURATION } from '../../utils/constants';
 
   import { createEventDispatcher } from 'svelte';
 
-  export let ter: string;
+  export let ter: string | null;
   export let state: State;
   export let defaultState: State;
   export let paintState: State;
@@ -17,18 +17,26 @@
   let letterTimeout: ReturnType<typeof setTimeout>;
   let flipTimeout: ReturnType<typeof setTimeout>;
   $: {
-    flipping = true;
-
-    clearTimeout(letterTimeout);
-    letterTimeout = setTimeout(() => {
-      displayedLetter = ter;  // this entire block is reactive on `ter`
-      visible = !!displayedLetter;
-    }, FLIP_DURATION);
-
-    clearTimeout(flipTimeout);
-    flipTimeout = setTimeout(() => {
-      flipping = false;
-    }, FLIP_DURATION);
+    if (ter === null) {
+      // delete the letter instantly
+      displayedLetter = '';
+      visible = false;
+    } else {
+      // flip to change letters
+      // (this branch is also triggered if ter === '')
+      flipping = true;
+  
+      clearTimeout(letterTimeout);
+      letterTimeout = setTimeout(() => {
+        displayedLetter = ter || '';  // this entire block is reactive on `ter`
+        visible = !!ter;
+      }, FLIP_IN_DURATION);
+  
+      clearTimeout(flipTimeout);
+      flipTimeout = setTimeout(() => {
+        flipping = false;
+      }, FLIP_IN_DURATION);
+    }
   }
 
   function paint(e: MouseEvent) {
@@ -48,7 +56,7 @@
   class:disabled
   class:flipping
   class="tile {CSSState[state || defaultState].toLowerCase()}"
-  style="--flip-duration: {FLIP_DURATION}ms"
+  style="--flip-in-duration: {FLIP_IN_DURATION}ms; --flip-out-duration: {FLIP_OUT_DURATION}ms"
   on:mouseenter={paint}
   on:mousedown={paint}
   on:touchmove|preventDefault={() => { state = paintState; }}
@@ -75,9 +83,16 @@
     user-select: none;
     border: 2px solid;
 
-    transition: background-color, border-color;
-    transition-duration: 150ms;
+    transition: transform var(--flip-out-duration) ease-out, background-color 150ms, border-color 150ms;
 
+    // animation
+    transform: scaleY(100%);
+    &.flipping {
+      transition: transform var(--flip-in-duration) ease-in, background-color 150ms, border-color 150ms;
+      transform: scaleY(0);
+    }
+
+    // colors
     &.empty {
       background-color: var(--black);
       border-color: var(--gray);
@@ -101,20 +116,6 @@
     &.disabled {
       pointer-events: none;
       opacity: 50%;
-    }
-  }
-
-  // animation
-  .tile {
-    transition: transform;
-    transition-duration: 200ms;
-    transition-timing-function: ease-out;
-    transform: scaleY(100%);
-
-    &.flipping {
-      transition-timing-function: ease-in;
-      transition-duration: 100ms;
-      transform: scaleY(0);
     }
   }
 </style>
