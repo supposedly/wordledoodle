@@ -1,42 +1,41 @@
 # [Wordle Doodle](https://supposedly.github.io/wordledoodle)
 
-Doodle on a Wordle grid and get your drawing filled in with the right words.
+Wordle art! This gives you a Wordle grid to doodle on with three colors, and it tries its best to fill in the grid with matching words.
 
-## To do
+If you've already solved today's Wordle but you still want to try out a result from here on the real site,
+you can open https://powerlanguage.co.uk/wordle in a Private or Incognito window and have at it.
 
-### Important
-- Default to number input & fill in the current number from the date
+## I need to fix
+- Combining "elsewhere" (yellow) and "wrong" (black) letters takes too much time. More below
+- (when I wake up tomorrow) The word-selection buttons are too low and too small on mobile.
 
-### Later than sooner than later
-- Use all three of Wordle's color schemes
-
-## Technical bits
+## Technical stuff
 
 ### Algorithm
 If anyone reading knows more than me and spots something inefficient or wrong here, please let me know! I'm not sure if there's
 a better alternative to the set stuff.
 
 Starting with a sorted dictionary of words that are all the same length...
-1. Concatenate the words together with an arbitrary out-of-alphabet delimiter, then construct a huge suffix array out of it.
+1. Concatenate the words together with an arbitrary out-of-alphabet delimiter, then construct a huge suffix array out of the resulting string.
 2. Go through the suffix array linearly and group the indices together based on each one's position within a word.  
    (Since our words are all the same length, and the concatenation delimter adds 1 to that length, we can do this by just
    grouping the indices by `index % (1 + wordLength)`)  
-   Since the original suffix array was sorted lexicographically, these suffix subarrays will remain sorted.
+   Since the original suffix array was sorted lexicographically, these suffix subarrays will be sorted too.
 3. When a row of green states (letters that are `Right`), yellow states (letters that are `Elsewhere`), and/or black states
    (letters that are `Wrong`) needs to be solved for:
-    1. Start keeping a running set of possible solves.
+    1. Start keeping a running set of possible solves. This'll actually be a list of multiple sets, each one representing a different 'solve path'.
     2. Do all the `Right` letters first, since that's the narrowest state possible and helps us cut down a lot on our search space.
        To process a `Right` letter, do two binary searches in the "suffix subarray" that matches its position: one search to find
        the very first word that has it at that position, and another to find the very last word with it there. Grab those two
        words and all of the ones in between them, then store them in a set.  
-       Take the intersection of that set with the running set of possible solves, then replace latter with it.  
+       Narrow down the running set of solutions by taking its intersection with that set.  
     3. Do the `Elsewhere`s next. To process one, take all of the target word's letters except the correct one for this position and
        any that have already been used up, and for each one, collect the same type of word-set as for `Right` letters. Associate
        all of those sets with this position, since they're all different possibilities.  
-       Once done, intersect the running set with each of these possibilities, and prune any intersections that end up empty.  
-       Make these intersections the new sets of possible solves. Make sure to associate each one with the letters it's consumed to
-       get there. We can't merge (union) all of these possibilities together because they represent different 'solve paths', aka
-       different sequences of consumed letters.
+       Once done, intersect the running solution set with each of these possibilities, and prune any intersections that end up empty.  
+       Make the remaining intersections the new sets of possible solves. Make sure to keep track of the letters each one had to consume to
+       get there. (We can't merge (union) all of these possibilities together because they represent different 'solve paths', aka
+       different sequences of consumed letters.)
     4. Finally, finish off by processing the `Wrong` letters. Unlike `Elsewhere`s, `Wrong`s don't need to pay attention to the letters
        they're consuming: the same letter can be `Wrong` indefinitely many times, even though it can't be `Elsewhere` any more times
        than it appears in the target word.  
@@ -50,15 +49,18 @@ Starting with a sorted dictionary of words that are all the same length...
 seem worth the trouble. It would come at the cost of a couple extra binary-search hops every time we need to find a letter.
 
 Also, since Wordle's dictionary is only, like, 12k words, most of this is kind of overkill --
-a few linear regex searches on it would be quick enough to handle basically everything above. I just wanted to leave things open for
+a few linear regex searches on it might be quick enough to handle basically everything above. I just wanted to leave things open for
 words longer than 5 letters or a way-larger dictionary.
+
+...speaking of which, #3.iv above isn't working: grids with lots of Elsewheres followed by lots of Wrongs can take up to two seconds to solve.
+Caching Wrongs' results would help, but I don't have any ideas as to how. I tried making it go letter-by-letter instead of range-by-range so it
+could be backed by the cache I use for individual letters' results, but that just made it even slower.
 
 ### To do too (two)
 
 #### Significant
 1. Cache the result of the set=>array conversion needed to pick a random value out of a set in JS
-2. Figure out the best way to cache searches for `Wrong` letters (would be fixable easily by making getRangeWithout() determine
-   letters instead of indices and then just rely on getRange() + its cache)
+2. Figure out the best way to cache searches for `Wrong` letters
 3. Mayyyyybe sort letters in ascending order of the size of the set(s) they'd produce (e.g. sort `Right`s by their frequency in
    English and `Elsewhere`s by the combined frequency of their alternatives?) to maximally trim the search space, but meh
 
