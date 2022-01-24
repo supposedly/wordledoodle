@@ -143,3 +143,7 @@ button, input[type="radio"].like-button, input[type="checkbox"].like-button ~ la
         box-shadow: inset #000 0px 2px 5px 1px;
     }
 }
+
+:disabled {
+    pointer-events: none;
+}

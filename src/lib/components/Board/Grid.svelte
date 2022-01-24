@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { State } from '../../utils/types';
+  import { State, WordleWord } from '../../utils/types';
   import { SHAKE_DURATION } from '../../utils/constants';
   
   import Cell from './Cell.svelte';
@@ -14,6 +14,7 @@
   export let length: number;
   export let height: number;
   export let paintState: State;
+  export let givenWord: WordleWord;
   let fullySolvedRow: number = height;
 
   $: gameWidth = 1 + length;
@@ -161,6 +162,7 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
       {length}
       maxlength={1}
       placeholder="word?"
+      {givenWord}
       let:valid
       let:dispatch
       on:solve={solve}
@@ -216,10 +218,6 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
     margin: 5px;
     text-align: center;
     border: none;
-
-    &:disabled, &[disabled] /* just paranoia, in reality the :disabled suffices except on IE */ {
-      pointer-events: none;
-    }
   }
 
   form.row {

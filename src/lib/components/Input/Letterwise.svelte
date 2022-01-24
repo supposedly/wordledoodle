@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { WordleWord } from 'src/lib/utils/types';
   import { createEventDispatcher } from 'svelte';
 
   const VALID_PATTERN = /^[a-zA-Z]$/;
@@ -6,9 +7,16 @@
   export let maxlength: number;
   export let placeholder: string;
   export let length: number;
+  export let givenWord: WordleWord;
 
-  const answer: string[] = Array.from({length});
-  
+  let answer: string[] = Array.from({length});
+
+  $: if (givenWord.word === undefined) {
+    givenWord = {word: null, hidden: null};
+  } else if (givenWord.word !== null) {
+    answer = [...givenWord.word];
+  }
+
   let valid = false;
   $: valid = answer.every(letter => letter && VALID_PATTERN.test(letter));
 
@@ -35,6 +43,10 @@
   }
 
   function handleInput(e: Event & { data?: string }) {
+    if (givenWord.word !== null) {
+      givenWord = {word: null, hidden: null};
+    }
+
     if (!(e.target instanceof HTMLInputElement)) {
       return;
     }
@@ -167,14 +179,25 @@
   const dispatch = () => dispatcher('solve', {answer: answer.join('')});
 </script>
 
-{#each placeholder as letter, idx}
-  <input type="text" {maxlength} placeholder={letter} pattern="[a-zA-Z]"
-    data-idx={idx}
-    bind:value={answer[idx]}
-    on:input={handleInput}
-    on:keydown={handleNonInput}
-  >
-{/each}
+{#if givenWord.word !== null && givenWord.hidden}
+  {#each placeholder as letter, idx}
+    <input type="password" {maxlength} placeholder={letter} pattern="[a-zA-Z]"
+      data-idx={idx}
+      bind:value={answer[idx]}
+      on:input={handleInput}
+      on:keydown={handleNonInput}
+    >
+  {/each}
+{:else}
+  {#each placeholder as letter, idx}
+    <input type="text" {maxlength} placeholder={letter} pattern="[a-zA-Z]"
+      data-idx={idx}
+      bind:value={answer[idx]}
+      on:input={handleInput}
+      on:keydown={handleNonInput}
+    >
+  {/each}
+{/if}
 
 <!-- submit button -->
 <slot {valid} {dispatch}></slot>

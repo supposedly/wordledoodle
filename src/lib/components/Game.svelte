@@ -1,11 +1,11 @@
 <script lang="ts">
-  import type { State } from '../utils/types';
+  import type { State, WordleWord } from '../utils/types';
   import type { Dictionary } from '../utils/search';
-  import { SHAKE_DURATION } from '../utils/constants';
+  import { SHAKE_DURATION, SPAM_CLICK_TIMEOUT, TODAYS_WORDLE } from '../utils/constants';
 
   import Grid from './Board/Grid.svelte';
   import Picker from './Paint/Picker.svelte';
-  import SelectNumber from './NumberInput/SelectNumber.svelte';
+  import Daywise from './Input/Daywise.svelte';
   import ToastContainer from './Notifications/Container.svelte';
   import { Toaster } from './Notifications/toaster';
 
@@ -83,6 +83,35 @@
 
     unsolvableRows = possibleSolves.map((_, row) => row).filter(row => possibleSolves[row][0] === '');
   }
+
+  let wordFromWordle: WordleWord = {word: null, hidden: null};
+
+  let wordToastTimeout: ReturnType<typeof setTimeout>;
+  function setWordFromWordle(message: CustomEvent<{index: number, hidden: boolean}>) {
+    clearTimeout(wordToastTimeout);
+
+    const index = message.detail.index;
+    const hidden = message.detail.hidden;
+
+    if (index === TODAYS_WORDLE) {
+      wordToastTimeout = setTimeout(
+        () => toast(hidden ? "Showing today's word (hidden)" : "Showing today's word"),
+        SPAM_CLICK_TIMEOUT
+      );
+    } else if (index === TODAYS_WORDLE - 1) {
+      wordToastTimeout = setTimeout(
+        () => toast("Showing yesterday's word"),
+        SPAM_CLICK_TIMEOUT
+      );
+    } else {
+      wordToastTimeout = setTimeout(
+        () => toast(`Showing word from ${TODAYS_WORDLE - index} days ago`),
+        SPAM_CLICK_TIMEOUT
+      );
+    }
+
+    wordFromWordle = {word: dictionary.rawDictionary[index], hidden};
+  }
 </script>
 
 
@@ -96,10 +125,11 @@
       {paintState}
       {unsolvableRows}
       {possibleSolves}
+      givenWord={wordFromWordle}
       on:solve={solve}
     />
   </section>
-  <!-- <SelectNumber highNumber={218}/> -->
+  <Daywise on:use={word => setWordFromWordle(word)} />
 </article>
 
 <style>
@@ -121,6 +151,7 @@
   .container {
     flex-grow: 1;
     overflow: hidden;
+    margin-bottom: 0;
   }
 
   .lightTheme {

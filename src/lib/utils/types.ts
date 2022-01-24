@@ -11,3 +11,5 @@ export enum CSSState {
   Present,
   Correct
 };
+
+export type WordleWord = {word: string, hidden: boolean} | {word: null, hidden: null};
