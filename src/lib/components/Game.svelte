@@ -2,38 +2,70 @@
   import type { State } from '../utils/types';
   import type { Dictionary } from '../utils/search';
   import { SHAKE_DURATION } from '../utils/constants';
-  
+
   import Grid from './Board/Grid.svelte';
   import Picker from './Paint/Picker.svelte';
   import SelectNumber from './NumberInput/SelectNumber.svelte';
-
   import ToastContainer from './Notifications/Container.svelte';
   import { Toaster } from './Notifications/toaster';
 
+  import { onMount } from 'svelte';
+  
   const length = 5;
   const height = 6;
+  
   const toaster = new Toaster<string>();
-
+    
   export let dictionary: Dictionary;
+  const EMPTY_ARRAY = Array.from({length: dictionary.wordLength}, () => '');
+  let unsolvableRows: number[] = [];
+  let possibleSolves: string[][] = Array.from({length: height}, () => [...EMPTY_ARRAY]);
 
   let containerHeight: number;
   let containerWidth: number;
   let paintState: State;
 
-  let shaking = false;
+  let lightTheme: boolean = false;
+  let highContrast: boolean = false;
 
-  let lightTheme: boolean;
-  let highContrast: boolean;
+  let lightThemeMessage1Timeout: ReturnType<typeof setTimeout>;
+  let lightThemeMessage2Timeout: ReturnType<typeof setTimeout>;
 
-  $: if (lightTheme) {
-    toaster.push("Wordle's light theme won't look like this");
-    setTimeout(() => toaster.push("But it'll use white squares ⬜ when you share it"), 1400);
+  let loaded: boolean = false;
+
+  onMount(() => { loaded = true; })
+
+  function toast(message: string) {
+    if (!loaded) {
+      // otherwise it'll pop up with all of those reactive messages on page load
+      // (ik the smart thing to do would be to call toaster.push() in an event handler
+      // instead of from a reactive block, which would also obviate the weird isolation
+      // of clearTimeout() that u gotta do to avoid an infinite loop, but w/e)
+      return;
+    }
+    toaster.push(message);
   }
 
-  const EMPTY_ARRAY = Array.from({length: dictionary.wordLength}, () => '');
+  $: if (!lightTheme) {
+    clearTimeout(lightThemeMessage1Timeout);
+    clearTimeout(lightThemeMessage2Timeout);
+  }
 
-  let unsolvableRows: number[] = [];
-  let possibleSolves: string[][] = Array.from({length: height}, () => [...EMPTY_ARRAY]);
+  $: if (lightTheme) {
+    toast("Dark theme off");
+    lightThemeMessage1Timeout = setTimeout(() => {
+      toast("(Wordle won't look like this with dark theme off,")
+      lightThemeMessage2Timeout = setTimeout(() => toast("but it'll use white squares ⬜ when you share)"), 1400);
+    }, 1400);
+  } else {
+    toast("Dark theme on");
+  }
+
+  $: if (highContrast) {
+    toast("High contrast on");
+  } else {
+    toast("High contrast off");
+  }
 
   function solve(message: CustomEvent<{answer: string, patterns: State[][]}>) {
     possibleSolves = message.detail.patterns.map(
@@ -51,16 +83,6 @@
 
     unsolvableRows = possibleSolves.map((_, row) => row).filter(row => possibleSolves[row][0] === '');
   }
-
-  function error(message: string) {
-    toaster.push(message);
-    shake();
-  }
-
-  function shake() {
-    shaking = true;
-    setTimeout(() => { shaking = false; }, SHAKE_DURATION);
-  }
 </script>
 
 
@@ -72,7 +94,6 @@
       {length} {height}
       {containerHeight} {containerWidth}
       {paintState}
-      {shaking}
       {unsolvableRows}
       {possibleSolves}
       on:solve={solve}
@@ -104,6 +125,7 @@
 
   .lightTheme {
     --color-absent: #ccccdd;
+    --letter-color-absent: var(--black);
   }
 
   .highContrast {

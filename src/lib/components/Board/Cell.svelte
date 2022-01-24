@@ -111,6 +111,7 @@
     }
 
     &.absent {
+      color: var(--letter-color-absent);
       background-color: var(--color-absent);
       border-color: transparent;
     }

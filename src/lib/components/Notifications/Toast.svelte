@@ -13,7 +13,7 @@
     position: relative;
     background-color: var(--white);
     font-size: 16px;
-    opacity: 80%;
+    opacity: 90%;
     font-weight: bold;
     text-align: center;
     border-radius: 4px;

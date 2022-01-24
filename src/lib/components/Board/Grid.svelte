@@ -9,7 +9,7 @@
   import { tweened } from 'svelte/motion';
 
   export let unsolvableRows: number[];
-  export let shaking = false;
+  export let shaking = false;  // unused
   export let centerSelf = true;
   export let length: number;
   export let height: number;
