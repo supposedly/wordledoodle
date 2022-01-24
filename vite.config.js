@@ -16,11 +16,11 @@ export default defineConfig({
       name: `dictionary-loader`,
       transform(src, id) {
         if (/\.dictionary$/.test(id)) {
-          const [wordLengthStr, alphabet, ...words] = src.trim().split(/\s+/);
-          const wordLength = +wordLengthStr;
+          const [alphabet, wordLengthStr, lastWordIndexStr, ...words] = src.trim().split(/\s+/);
+          const wordLength = +wordLengthStr, lastWordIndex = +lastWordIndexStr;
+          // (wordLength more like wordleNgth amirite)
           return {
-            code: toExports({wordLength, alphabet, words})
-            // (wordLength more like wordleNgth amirite)
+            code: toExports({wordLength, alphabet, lastWordIndex, words})
           };
         }
       }

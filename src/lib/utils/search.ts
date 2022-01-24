@@ -49,11 +49,13 @@ export class Dictionary {
   private gsaText: string;
   private readonly gsaWordLength;
 
+  public readonly dictionary: readonly string[];
+
   constructor(
-    public readonly dictionary: readonly string[],
+    public readonly rawDictionary: readonly string[],
     public readonly wordLength: number
   ) {
-    this.dictionary = [...this.dictionary].sort();
+    this.dictionary = [...this.rawDictionary].sort();
     this.gsaWordLength = 1 + this.wordLength;
 
     const gsa = new GeneralizedSuffixArray(this.dictionary as string[]);  // no harm done, GSA doesn't mutate
@@ -70,25 +72,28 @@ export class Dictionary {
     }
   }
 
-  has(answer: string): boolean {
+  indexOf(word: string): number {
     let low = 0;
     let high = this.dictionary.length - 1;
     let mid: number;
   
     do {
       mid = Math.floor((high + low) / 2);
-      if (this.dictionary[mid] > answer) {
+      if (this.dictionary[mid] > word) {
         high = mid;
       }
-      if (this.dictionary[mid] < answer) {
+      if (this.dictionary[mid] < word) {
         low = mid;
       }
       if (high - low <= 1) {
         break;
       }
-    } while (this.dictionary[mid] !== answer);
+    } while (this.dictionary[mid] !== word);
 
-    return this.dictionary[mid] === answer;
+    if (this.dictionary[mid] === word) {
+      return mid;
+    }
+    return -1;
   }
 
   private findFirst(letter: string, at: number): number {
