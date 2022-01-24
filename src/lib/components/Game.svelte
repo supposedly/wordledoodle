@@ -107,7 +107,7 @@
       wordToastTimeout = setTimeout(
         () => toast(hidden
           ? `Today's wordle <span style="font-size: small;">(hidden)</span>`
-          : `Today's wordle <span style="font-size: small;">(#${index})</span>`
+          : `Today's wordle`// <span style="font-size: small;">(#${index})</span>`
         ),
         SPAM_CLICK_TIMEOUT
       );

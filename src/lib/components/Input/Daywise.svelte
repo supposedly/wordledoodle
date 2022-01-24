@@ -27,63 +27,54 @@
 </script>
 
 <section>
-  <div>
-    <button on:click={goBack} title="Use previous day's wordle">◀️</button>
-    <button
-      on:click={middleButton}
-      title={hidden ? "Unhide today's wordle" : "Use today's wordle"}
-    >
-      {#if hidden} 👁️ {:else} 📆 {/if}
-    </button>
-    <button on:click={goForward} disabled={index >= TODAYS_WORDLE}>▶️</button>
-  </div>
+  <button on:click={goBack} title="Use previous day's wordle">◀️</button>
+  <button
+    on:click={middleButton}
+    title={hidden ? "Unhide today's wordle" : "Use today's wordle"}
+  >
+    {#if hidden} 👁️ {:else} 📆 {/if}
+  </button>
+  <button on:click={goForward} disabled={index >= TODAYS_WORDLE}>▶️</button>
 </section>
 
 <style lang="scss">
   section {
+    flex-grow: 2;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     margin-bottom: 10px;
   }
 
-  div {
-    display: block;
-    height: 100%;
-  }
-
   button {
-    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    height: 6vh;
+    width: 6vh;
+    border-radius: 50%;
     margin: {
-      left: 5px;
-      right: 5px;
+      left: 1vw;
+      right: 1vw;
     }
     cursor: pointer;
     font-weight: bold;
-    font-size: medium;
+    
+  }
+
+  button {
+    font-size: large;
     
     &:active {
       font-size: small;
     }
 
-    span {
-      display: block;
-      opacity: 80%;
-      transform: scaleY(0.85);
-    }
+    @media screen and (max-height: 400px) {
+      font-size: small;
 
-    &.emphasized {
-      > span {
-        opacity: 100%;
-      }
-
-      > span::after {
-        content: " (spoilers!)";
-        white-space: pre;
-        color: #ff3333;
-        display: inline-block;
-        transform: scaleY(1.2);
-        font-size: small;
+      &:active {
+        font-size: xx-small;
       }
     }
   }
