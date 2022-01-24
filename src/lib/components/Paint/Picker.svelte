@@ -38,7 +38,7 @@
     }
 
     &:checked + label::after {
-      filter: hue-rotate(200deg) contrast(2);
+      filter: hue-rotate(200deg) contrast(1.2);
     }
   }
 
@@ -55,7 +55,7 @@
   input[type=checkbox].like-button ~ label {
     align-self: center;
     width: 100%;
-    background-color: var(--dark-gray);
+    background-color: var(--black);
     margin:  {
       left: 5px;
       right: 5px;
