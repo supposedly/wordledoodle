@@ -210,6 +210,9 @@ export class Dictionary {
       // or one in which we've already used this letter all the way up
       case State.Wrong: {
         const exclude = Object.keys(soFar).filter(l => soFar[l] > 0);
+        if (soFar[letter] === 0) {
+          exclude.push(letter);
+        }
         return [new Possibility(null, this.getRangeWithout(exclude, at), soFar)];
       }
 
