@@ -6,8 +6,8 @@
   import Grid from './Board/Grid.svelte';
   import Picker from './Paint/Picker.svelte';
   import Daywise from './Input/Daywise.svelte';
-  import ToastContainer from './Notifications/Container.svelte';
-  import { Toaster } from './Notifications/toaster';
+  import Toaster from './Notifications/Toaster.svelte';
+  import { ToastQueue } from './Notifications/toastQueue';
 
   import { onMount } from 'svelte';
   import { DefaultMap, LRUMap } from 'mnemonist';
@@ -17,7 +17,7 @@
   const height = 6;
   const length = dictionary.wordLength;
   
-  const toaster = new Toaster<string>();
+  const toaster = new ToastQueue<string>();
     
   const EMPTY_ARRAY = Array.from({length}, () => '');
   let unsolvableRows: number[] = [];
@@ -105,17 +105,20 @@
 
     if (index === TODAYS_WORDLE) {
       wordToastTimeout = setTimeout(
-        () => toast(hidden ? "Showing today's word (hidden)" : "Showing today's word"),
+        () => toast(hidden
+          ? `Today's wordle <span style="font-size: small;">(hidden)</span>`
+          : `Today's wordle <span style="font-size: small;">(#${index})</span>`
+        ),
         SPAM_CLICK_TIMEOUT
       );
     } else if (index === TODAYS_WORDLE - 1) {
       wordToastTimeout = setTimeout(
-        () => toast("Showing yesterday's word"),
+        () => toast(`#${index} <span style="font-size: small;">(yesterday)</span>`),
         SPAM_CLICK_TIMEOUT
       );
     } else {
       wordToastTimeout = setTimeout(
-        () => toast(`Showing word from ${TODAYS_WORDLE - index} days ago`),
+        () => toast(`#${index} <span style="font-size: small;">(${TODAYS_WORDLE - index} days ago)</span>`),
         SPAM_CLICK_TIMEOUT
       );
     }
@@ -128,7 +131,7 @@
 <article class="game" class:lightTheme class:highContrast style="--shake-duration: {SHAKE_DURATION}ms">
   <Picker bind:lightTheme bind:highContrast bind:paintState />
   <section class="item-center container" bind:clientHeight={containerHeight} bind:clientWidth={containerWidth}>
-    <ToastContainer {toaster}/>
+    <Toaster {toaster}/>
     <Grid
       {length} {height}
       {containerHeight} {containerWidth}

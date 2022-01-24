@@ -1,7 +1,7 @@
 
 import Queue from 'mnemonist/queue';
 
-export class Toaster<T> {
+export class ToastQueue<T> {
   private toasts: Queue<{dequeuing: boolean, item: T}> = new Queue();
   private subscribers: Map<number, Function> = new Map();
   private subCount: number = 0;
