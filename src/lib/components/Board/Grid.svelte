@@ -201,7 +201,7 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
     align-items: center;
 
     .clear {
-      background-color: var(--black);
+      background-color: var(--bg-color);
       font-size: min(3.5vh, 1em);
 
       &::after {
@@ -214,7 +214,6 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
     width: 90%;
     height: 90%;
     margin: 5px;
-    border-radius: 5px;
     text-align: center;
     border: none;
 

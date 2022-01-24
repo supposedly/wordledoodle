@@ -11,6 +11,7 @@
 
   const length = 5;
   const height = 6;
+  const toaster = new Toaster<string>();
 
   export let dictionary: Dictionary;
 
@@ -18,8 +19,10 @@
   let containerWidth: number;
   let paintState: State;
 
-  const toaster = new Toaster<string>();
   let shaking = false;
+
+  let lightTheme: boolean;
+  let highContrast: boolean;
 
   const EMPTY_ARRAY = Array.from({length: dictionary.wordLength}, () => '');
 
@@ -61,8 +64,8 @@
 </script>
 
 
-<article class="game" style="--shake-duration: {SHAKE_DURATION}ms">
-  <Picker bind:paintState />
+<article class="game" class:lightTheme class:highContrast style="--shake-duration: {SHAKE_DURATION}ms">
+  <Picker bind:lightTheme bind:highContrast bind:paintState />
   <section class="item-center container" bind:clientHeight={containerHeight} bind:clientWidth={containerWidth}>
     <ToastContainer {toaster}/>
     <Grid
@@ -78,6 +81,7 @@
 </article>
 
 <style>
+
   .game {
     width: 100%;
     max-width: var(--game-max-width);
@@ -95,5 +99,14 @@
   .container {
     flex-grow: 1;
     overflow: hidden;
+  }
+
+  .lightTheme {
+    --bg-color: var(--white);
+  }
+
+  .highContrast {
+    --color-correct: var(--orange);
+    --color-present: var(--blue);
   }
 </style>

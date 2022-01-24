@@ -4,6 +4,8 @@
 }
 
 :root {
+    --color-change-duration: 150ms;
+
     --green: #6aaa64;
     --darkened-green: #538d4e;
     --yellow: #c9b458;
@@ -20,17 +22,27 @@
     --keyboard-height: 200px;
     --game-max-width: 500px;
 
+    --bg-color: var(--black);
+    --color-absent: var(--dark-gray);
+
     /* font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
     Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; */
 }
 
 :root, input, textarea, button {
     font-family: 'Clear Sans', 'Helvetica Neue', Arial, sans-serif;
-    transition: font-size 100ms;
-    background-color: var(--black);
+    background-color: var(--bg-color);
 }
 
-button {
+input[type="checkbox"].like-button {
+    opacity: 0;
+    position: absolute;
+    pointer-events: none;
+}
+
+button, input[type="checkbox"].like-button ~ label {
+    border-radius: 5px;
+
     &::after {
         transition: font-size 100ms;
         font-size: x-large;
@@ -73,8 +85,6 @@ button {
     }
 }
 
-
-
 :root, input, textarea {
     font-size: xx-large;
 
@@ -112,20 +122,18 @@ input[type="radio"] {
     --color-present: var(--blue);
 }
 
-button, input[type=radio] {
+button, input[type="radio"].like-button, input[type="checkbox"].like-button ~ label {
     background: linear-gradient(0deg, transparent 0%, transparent 50%, rgba(185, 185, 185, 0.5) 100%);
     box-shadow: inset var(--black) 0px 0px 2px 0px, #000 0px 2px 5px 0px;
     border: none;
-    transition: box-shadow, font-size, filter, color;
-    transition-duration: 75ms;
+    transition: box-shadow 75ms, font-size 75ms, filter 75ms, color 75ms, background-color var(--color-change-duration);
+    text-align: center;
 
     &:hover {
         filter: brightness(140%);
-        color: var(--black);
     }
 
     &:active {
-        font-size: 0.8em;
         filter: brightness(120%);
         box-shadow: inset #000 0px 2px 5px 1px;
     }

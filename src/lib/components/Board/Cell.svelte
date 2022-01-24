@@ -1,6 +1,10 @@
 <script lang="ts">
   import { State, CSSState } from '../../utils/types';
-  import { FLIP_IN_DURATION, FLIP_OUT_DURATION, FLIP_OUT_DELAY } from '../../utils/constants';
+  import {
+    FLIP_IN_DURATION,
+    FLIP_OUT_DURATION,
+    FLIP_OUT_DELAY,
+  } from '../../utils/constants';
 
   import { createEventDispatcher } from 'svelte';
 
@@ -58,10 +62,10 @@
   on:mousedown={paint}
   on:touchmove|preventDefault={() => { state = paintState; }}
   style="
-    --flip-in-duration: {FLIP_IN_DURATION}ms;
-    --flip-in-delay: {flipDelay}ms;
     --flip-out-duration: {FLIP_OUT_DURATION}ms;
     --flip-out-delay: {FLIP_OUT_DELAY}ms;
+    --flip-in-duration: {FLIP_IN_DURATION}ms;
+    --flip-in-delay: {flipDelay}ms;
   "
 >
   {#if displayedLetter && displayedLetter !== '\u200b'}
@@ -87,26 +91,27 @@
     border: 2px solid;
 
     transition: transform var(--flip-out-duration) ease-out var(--flip-out-delay),
-      background-color 150ms,
-      border-color 150ms;
+      background-color var(--color-change-duration),
+      border-color var(--color-change-duration);
 
     // animation
     transform: scaleY(100%);
     &.flipping {
       transition: transform var(--flip-in-duration) var(--flip-in-delay) ease-in,
-        background-color 150ms,
-        border-color 150ms;
+        background-color var(--color-change-duration),
+        border-color var(--color-change-duration);
       transform: scaleY(0);
     }
+    
 
     // colors
     &.empty {
-      background-color: var(--black);
+      background-color: var(--bg-color);
       border-color: var(--gray);
     }
 
     &.absent {
-      background-color: var(--dark-gray);
+      background-color: var(--color-absent);
       border-color: transparent;
     }
 
