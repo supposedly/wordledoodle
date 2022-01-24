@@ -7,7 +7,6 @@ you can open https://powerlanguage.co.uk/wordle in a Private or Incognito window
 
 ## I need to fix
 - Combining "elsewhere" (yellow) and "wrong" (black) letters takes too much time. More below
-- (when I wake up tomorrow) The word-selection buttons are too low and too small on mobile.
 
 ## Technical stuff
 
@@ -48,15 +47,19 @@ Starting with a sorted dictionary of words that are all the same length...
 \#2 could be simplified by constructing a suffix array that sorts by position before going lexicographically, but it didn't
 seem worth the trouble. It would come at the cost of a couple extra binary-search hops every time we need to find a letter.
 
-Also, since Wordle's dictionary is only, like, 12k words, most of this is kind of overkill --
-a few linear regex searches on it might be quick enough to handle basically everything above. I just wanted to leave things open for
-words longer than 5 letters or a way-larger dictionary.
+Also, since Wordle's dictionary is relatively small, most of this is kind of overkill -- a few linear regex searches on it might be quick
+enough to handle basically everything above. I just wanted to leave things open for words longer than 5 letters or a way-larger dictionary.
 
-...speaking of which, #3.iv above isn't working: grids with lots of Elsewheres followed by lots of Wrongs can take up to two seconds to solve.
-Caching Wrongs' results would help, but I don't have any ideas as to how. I tried making it go letter-by-letter instead of range-by-range so it
-could be backed by the cache I use for individual letters' results, but that just made it even slower.
+...speaking of which, #3.iv above isn't working: grids with lots of Elsewheres followed by lots of Wrongs can take up to two seconds
+to solve. I've mitigated that by caching the list of possible solves that you get for each combination of word + pattern of states,
+but that still fails if you draw a different pattern of Elsewheres on each row. (It still works well enough for now because the small
+size of the Wordle grid makes you pretty likely to draw repeated rows, but it'll start cracking on grids that are any larger.)
 
-### To do too (two)
+Caching the results of individual Wrong cells would also help, but I don't have any ideas as to how. I tried making it search
+letter-by-letter instead of range-by-range so it could be backed by the cache I use for individual letters' results, but that just
+made it even slower.
+
+### To do
 
 #### Significant
 1. Cache the result of the set=>array conversion needed to pick a random value out of a set in JS
@@ -67,4 +70,4 @@ could be backed by the cache I use for individual letters' results, but that jus
 #### Unimportant optimizations
 1. Use `>>0` trick instead of `Math.floor()`
 2. Use classic for-loops more than `.forEach()`, `.map()`, etc.
-3. Don't bother `Object.freeze()`-ing `Possibility.letterCounts`
+3. Don't bother `Object.freeze()`-ing stuff

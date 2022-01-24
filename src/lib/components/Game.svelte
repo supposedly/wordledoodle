@@ -10,14 +10,16 @@
   import { Toaster } from './Notifications/toaster';
 
   import { onMount } from 'svelte';
+  import { DefaultMap, LRUMap } from 'mnemonist';
+  import ArrayKeyedMap from 'array-keyed-map';
   
-  const length = 5;
+  export let dictionary: Dictionary;
   const height = 6;
+  const length = dictionary.wordLength;
   
   const toaster = new Toaster<string>();
     
-  export let dictionary: Dictionary;
-  const EMPTY_ARRAY = Array.from({length: dictionary.wordLength}, () => '');
+  const EMPTY_ARRAY = Array.from({length}, () => '');
   let unsolvableRows: number[] = [];
   let possibleSolves: string[][] = Array.from({length: height}, () => [...EMPTY_ARRAY]);
 
@@ -67,16 +69,24 @@
     toast("High contrast off");
   }
 
+  let patternCache = new DefaultMap<string, LRUMap<State[], string[]>>(
+    () => {
+      let map = new LRUMap<State[], string[]>(32);
+      (map as any).items = new ArrayKeyedMap();  // hack!
+      return map;
+    }
+  );
+
   function solve(message: CustomEvent<{answer: string, patterns: State[][]}>) {
-    possibleSolves = message.detail.patterns.map(
-      pattern => dictionary.match(
-        pattern,
-        message.detail.answer
-      )
-    ).map(set =>
-      // this is the worst :---------|
-      // getting random element out of a set should be constant-time
-      [...set][Math.floor(Math.random() * set.size)]
+    const {answer, patterns} = message.detail;
+    possibleSolves = patterns.map(pattern => {
+      const cache = patternCache.get(answer);
+      if (!cache.has(pattern)) {
+        cache.set(pattern, [...dictionary.match(pattern, answer)]);
+      }
+      return cache.get(pattern) as string[];
+    }).map(
+      solves => solves[Math.floor(Math.random() * solves.length)]
     ).map(
       word => word ? [...word] : [...EMPTY_ARRAY]
     );

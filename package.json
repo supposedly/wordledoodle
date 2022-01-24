@@ -20,6 +20,7 @@
     "vite": "^2.7.2"
   },
   "dependencies": {
-    "mnemonist": "^0.39.0"
+    "array-keyed-map": "^2.1.2",
+    "mnemonist": "0.39.0"
   }
 }
