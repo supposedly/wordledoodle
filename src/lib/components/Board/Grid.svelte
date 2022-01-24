@@ -18,7 +18,7 @@
 
   $: gameWidth = 1 + length;
   $: gameHeight = 1 + height;
-  $: gameRatio = gameWidth / gameHeight;
+  $: gameRatio = (gameWidth / gameHeight);
 
   const ALL_FALSE = Array.from({length: height}, () => false);
   let shakingRows: boolean[];
@@ -158,9 +158,9 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
   {/each}
   <form class="row">
     <Letterwise
-      placeholder="word?"
-      maxlength={1}
       {length}
+      maxlength={1}
+      placeholder="word?"
       let:valid
       let:dispatch
       on:solve={solve}

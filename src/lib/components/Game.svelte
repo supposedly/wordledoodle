@@ -5,6 +5,7 @@
   
   import Grid from './Board/Grid.svelte';
   import Picker from './Paint/Picker.svelte';
+  import SelectNumber from './NumberInput/SelectNumber.svelte';
 
   import ToastContainer from './Notifications/Container.svelte';
   import { Toaster } from './Notifications/toaster';
@@ -24,18 +25,17 @@
   let lightTheme: boolean;
   let highContrast: boolean;
 
+  $: if (lightTheme) {
+    toaster.push("Wordle's light theme won't look like this");
+    setTimeout(() => toaster.push("But it'll use white squares ⬜ when you share it"), 1400);
+  }
+
   const EMPTY_ARRAY = Array.from({length: dictionary.wordLength}, () => '');
 
   let unsolvableRows: number[] = [];
   let possibleSolves: string[][] = Array.from({length: height}, () => [...EMPTY_ARRAY]);
 
   function solve(message: CustomEvent<{answer: string, patterns: State[][]}>) {
-    /*
-    if (!dictionary.has(message.detail.answer)) {
-      error('Not in word list');
-      return;
-    }
-    */
     possibleSolves = message.detail.patterns.map(
       pattern => dictionary.match(
         pattern,
@@ -78,6 +78,7 @@
       on:solve={solve}
     />
   </section>
+  <!-- <SelectNumber highNumber={218}/> -->
 </article>
 
 <style>
@@ -102,7 +103,7 @@
   }
 
   .lightTheme {
-    --bg-color: var(--white);
+    --color-absent: #ccccdd;
   }
 
   .highContrast {

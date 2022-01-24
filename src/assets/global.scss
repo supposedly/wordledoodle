@@ -29,6 +29,10 @@
     Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; */
 }
 
+* {
+    user-select: none;
+}
+
 :root, input, textarea, button {
     font-family: 'Clear Sans', 'Helvetica Neue', Arial, sans-serif;
     background-color: var(--bg-color);

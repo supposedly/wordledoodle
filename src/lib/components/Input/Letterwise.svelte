@@ -1,15 +1,16 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
 
+  const VALID_PATTERN = /^[a-zA-Z]$/;
+  
   export let maxlength: number;
   export let placeholder: string;
   export let length: number;
+
   const answer: string[] = Array.from({length});
+  
   let valid = false;
-
-  const validPattern = /^[a-zA-Z]$/;
-
-  $: valid = answer.every(letter => letter && validPattern.test(letter));
+  $: valid = answer.every(letter => letter && VALID_PATTERN.test(letter));
 
   function getNext(element: HTMLInputElement) {
     let next: ChildNode | null = element;
@@ -122,7 +123,7 @@
         if (e.ctrlKey) {
           break;
         }
-        if (!validPattern.test(e.key)) {
+        if (!VALID_PATTERN.test(e.key)) {
           break;
         }
         if (

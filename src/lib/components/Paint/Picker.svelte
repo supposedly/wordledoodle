@@ -13,10 +13,6 @@
 <section>
   <input type="checkbox" class="like-button" id="high-contrast" title="Toggle high-contrast colors" bind:checked={highContrast}>
   <label for="high-contrast" title="Toggle high-contrast colors"></label>
-  <!-- <input type="checkbox" class="like-button" id="color-scheme" title="Change color scheme" bind:checked={lightTheme}>
-  <label for="color-scheme" title="Change color scheme"></label> -->
-</section>
-<section>
   {#each paintStates as state}
     <input
       type="radio"
@@ -28,13 +24,23 @@
     >
     <!-- i don't know why specifying `checked` that way works... -->
   {/each}
+  <input type="checkbox" class="like-button" id="light-theme" title="Toggle light-theme colors" bind:checked={lightTheme}>
+  <label for="light-theme" title="Toggle light-theme colors"></label>
 </section>
 
 <style lang="scss">
-
   #high-contrast {
     & + label::after {
       content: "🎨";
+    }
+
+    & + label::before {
+      display: block;
+      content: "\A🎨\A";
+      white-space: pre;
+      opacity: 0;
+      height: 0;
+      pointer-events: none;
     }
 
     &:checked + label::after {
@@ -42,24 +48,36 @@
     }
   }
 
-  #color-scheme {
+  #light-theme {
     & + label::after {
       content: "💡";
     }
 
-    &:checked + label::after {
+    & + label::before {
+      display: block;
+      content: "\A💡\A";
+      white-space: pre;
+      opacity: 0;
+      height: 0;
+      pointer-events: none;
+    }
+
+    &:not(:checked) + label::after {
       filter: invert(1) grayscale(1) brightness(2) contrast(4);
     }
   }
 
   input[type=checkbox].like-button ~ label {
     align-self: center;
-    width: 100%;
     background-color: var(--black);
-    margin:  {
+    margin: {
       left: 5px;
       right: 5px;
     }
+    padding: 5px {
+      top: 0px;
+      bottom: 4px;
+    };
   }
 
   section {
