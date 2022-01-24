@@ -2,15 +2,15 @@
 import Queue from 'mnemonist/queue';
 
 export class Toaster<T> {
-  readonly timeout: number;
-  private toasts: Queue<T> = new Queue();
+  private toasts: Queue<{dequeuing: boolean, item: T}> = new Queue();
   private subscribers: Map<number, Function> = new Map();
   private subCount: number = 0;
-  private arrayCache: T[] | null = null;
+  private arrayCache: {dequeuing: boolean, item: T}[] | null = null;
 
-  constructor(timeout: number = 1000) {
-    this.timeout = timeout;
-  }
+  constructor(
+    public readonly timeout: number = 1500,
+    public readonly postTimeout: number = 200
+  ) {}
 
   subscribe(fn: Function) {
     fn(this.items());
@@ -31,14 +31,20 @@ export class Toaster<T> {
   }
 
   push(item: T) {
-    this.toasts.enqueue(item);
+    this.toasts.enqueue({dequeuing: false, item});
     this.updateSubscribers();
 
     // this is safe as long as the timeout never changes
     // which means we don't have to bother with IDs or anything
     setTimeout(() => {
-      this.toasts.dequeue();
+      const top = this.toasts.peek() as {dequeuing: boolean, item: T};  // can't be undefined
+      top.dequeuing = true;
       this.updateSubscribers();
+
+      setTimeout(() => {
+        this.toasts.dequeue();
+        this.updateSubscribers();
+      }, this.postTimeout);
     }, this.timeout);
   }
 

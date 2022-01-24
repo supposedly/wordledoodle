@@ -1,15 +1,18 @@
 <script lang="ts">
+  import { fly } from 'svelte/transition';
   import Toast from './Toast.svelte';
   import type { Toaster } from './toaster';
 
   export let toaster: Toaster<string>;
+
+  let movingUp: boolean;
+  $: movingUp = $toaster[0] && $toaster[0].dequeuing;
+
 </script>
 
 <ol class="container">
-  {#each $toaster as message}
-    <li>
-      <Toast>{message}</Toast>
-    </li>
+  {#each $toaster as toast, idx (idx)}
+    <Toast {movingUp}>{toast.item}</Toast>
   {/each}
 </ol>
 
