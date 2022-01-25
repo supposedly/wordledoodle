@@ -104,13 +104,17 @@
     const hidden = message.detail.hidden;
 
     if (index === TODAYS_WORDLE) {
-      wordToastTimeout = setTimeout(
-        () => toast(hidden
+      // wordToastTimeout = setTimeout(
+      //   () => toast(hidden
+      //     ? `Today's wordle <span style="font-size: small;">(hidden)</span>`
+      //     : `Today's wordle`// <span style="font-size: small;">(#${index})</span>`
+      //   ),
+      //   SPAM_CLICK_TIMEOUT
+      // );
+      toast(hidden
           ? `Today's wordle <span style="font-size: small;">(hidden)</span>`
           : `Today's wordle`// <span style="font-size: small;">(#${index})</span>`
-        ),
-        SPAM_CLICK_TIMEOUT
-      );
+        );
     } else if (index === TODAYS_WORDLE - 1) {
       wordToastTimeout = setTimeout(
         () => toast(`#${index} <span style="font-size: small;">(yesterday)</span>`),
@@ -168,6 +172,8 @@
   }
 
   .lightTheme {
+    --color-correct: var(--green);
+    --color-present: var(--yellow);
     --color-absent: #ccccdd;
     --letter-color-absent: var(--black);
   }
