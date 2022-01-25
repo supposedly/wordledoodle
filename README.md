@@ -5,7 +5,7 @@ Wordle art! This gives you a Wordle grid to doodle on with three colors, and it 
 If you've already solved today's Wordle but you still want to try out a result from here on the real site,
 you can open https://powerlanguage.co.uk/wordle in a Private or Incognito window and have at it.
 
-## I need to fix
+## Thing I need to fix
 - Combining "elsewhere" (yellow) and "wrong" (black) letters takes too much time. More below
 
 ## Technical stuff
@@ -62,9 +62,8 @@ made it even slower.
 ### To do
 
 #### Significant
-1. Cache the result of the set=>array conversion needed to pick a random value out of a set in JS
-2. Figure out the best way to cache searches for `Wrong` letters
-3. Mayyyyybe sort letters in ascending order of the size of the set(s) they'd produce (e.g. sort `Right`s by their frequency in
+1. Figure out the best way to cache searches for `Wrong` letters
+2. Mayyyyybe sort letters in ascending order of the size of the set(s) they'd produce (e.g. sort `Right`s by their frequency in
    English and `Elsewhere`s by the combined frequency of their alternatives?) to maximally trim the search space, but meh
 
 #### Unimportant optimizations
