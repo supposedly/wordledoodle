@@ -3,20 +3,25 @@ import Sets from 'mnemonist/set';
 
 import { State } from './types';
 
+type Counter = {count: number, indices: number[]};  // indices will be used for membership-checking, but not making it a set bc it's always going to be really small
 const EMPTY_SET = Object.freeze(new Set<string>());
 const LRU_CAPACITY = 512;  // idk
 
 class Possibility {
   constructor(
     letter: string | null,
+    index: number | null,
     public readonly set: Set<string>,
-    public readonly letterCounts: Record<string, number>,  // record of letters still available to use
+    public readonly letterCounts: Record<string, Counter>,  // record of letters still available to use
   ) {
-    // shallow-copy this so we can mutate it
-    this.letterCounts = {...this.letterCounts};
     if (letter !== null) {
-      // remove letter from available letters
-      this.letterCounts[letter] -= 1;
+      // don't like all this copying :(
+      this.letterCounts = {...this.letterCounts, [letter]: {...this.letterCounts[letter]}};
+      this.letterCounts[letter].count--;  // remove letter from available letters
+      if (index !== null) {
+        // note the index this letter was used at
+        this.letterCounts[letter].indices = [...this.letterCounts[letter].indices, index];
+      }
     }
     // make it read-only
     this.letterCounts = Object.freeze(this.letterCounts);
@@ -26,10 +31,13 @@ class Possibility {
 // create a counter of the letters/chars that appear in a string
 // TODO: maybe simplify this with mnemonist's DefaultMap
 // (https://yomguithereal.github.io/mnemonist/default-map#autoincrement)
-function counter(s: string): Record<string, number> {
-  let counts: Record<string, number> = {};
+function counter(s: string): Record<string, Counter> {
+  let counts: Record<string, Counter> = {};
   for (let char of s) {
-    counts[char] = (counts[char] || 0) + 1;
+    if (counts[char] === undefined) {
+      counts[char] = {count: 0, indices: []};
+    }
+    counts[char].count++;
   }
   return counts;
 }
@@ -188,11 +196,11 @@ export class Dictionary {
   // it starts out as a map of the original word produced by counter(),
   // so for example the word 'banal' starts as {b: 1, a: 2, n: 1, l: 1}
   // but every time we use a letter its value in there gets decremented by one
-  private handleLetter(at: number, letter: string, state: State, soFar: Record<string, number>): Possibility[] {
+  private handleLetter(at: number, letter: string, state: State, soFar: Record<string, Counter>): Possibility[] {
     switch (state) {
       // 'Right' means we want a word that has this letter at this exact index
       case State.Right: {
-        return [new Possibility(letter, this.getRange(letter, at), soFar)];
+        return [new Possibility(letter, at, this.getRange(letter, at), soFar)];
       }
 
       // 'Elsewhere' means we want a word that has this letter, but not at this index
@@ -202,18 +210,17 @@ export class Dictionary {
       case State.Elsewhere: {
         // l !== letter: we don't want to return words that have this letter at this index ofc
         // soFar[l] > 0: we also don't want words that have letters we've already used up
-        const allowed = Object.keys(soFar).filter(l => l !== letter && soFar[l] > 0);
-        return allowed.map(l => new Possibility(l, this.getRange(l, at), soFar));
+        const allowed = Object.keys(soFar).filter(l => l !== letter && soFar[l].count > 0);
+        return allowed.map(l => new Possibility(l, at, this.getRange(l, at), soFar));
       }
 
       // this means we want a word that doesn't have this letter anywhere
       // or one in which we've already used this letter all the way up
       case State.Wrong: {
-        const exclude = Object.keys(soFar).filter(l => soFar[l] > 0);
-        if (soFar[letter] === 0) {
-          exclude.push(letter);
-        }
-        return [new Possibility(null, this.getRangeWithout(exclude, at), soFar)];
+        const exclude = Object.keys(soFar).filter(
+          l => soFar[l].count > 0 || soFar[l].indices.some(idx => idx > at)
+        );
+        return [new Possibility(null, null, this.getRangeWithout(exclude, at), soFar)];
       }
 
       // otherwise nothing
@@ -231,7 +238,7 @@ export class Dictionary {
     const [firstIndex, ...sortedIndices] = pattern
       .map((_, idx) => idx)
       .sort((a, b) => pattern[b] - pattern[a]);  // taking advantage of the State enum's ordering
-
+    
     // this part is basically a giant reduce loop
     // `possibilities` is the accumulator / holds all possible words at each iteration
     // and slowly gets whittled down until we reach the end, where it'll store all results
