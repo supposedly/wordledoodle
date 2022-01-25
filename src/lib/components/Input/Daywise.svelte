@@ -27,14 +27,24 @@
 </script>
 
 <section>
-  <button on:click={goBack} title="Use previous day's wordle">◀️</button>
+  <button
+    on:click={goBack}
+    title="Use previous day's wordle"
+    disabled={index <= 0}
+  >◀️</button>
+
   <button
     on:click={middleButton}
-    title={hidden ? "Unhide today's wordle" : "Use today's wordle"}
+    title={hidden ? "Reveal today's wordle" : "Use today's wordle"}
   >
     {#if hidden} 👁️ {:else} 📆 {/if}
   </button>
-  <button on:click={goForward} disabled={index >= TODAYS_WORDLE}>▶️</button>
+
+  <button
+    on:click={goForward}
+    title="Use next day's wordle"
+    disabled={index >= TODAYS_WORDLE}
+  >▶️</button>
 </section>
 
 <style lang="scss">

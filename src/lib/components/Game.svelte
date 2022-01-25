@@ -10,7 +10,7 @@
   import { ToastQueue } from './Notifications/toastQueue';
 
   import { onMount } from 'svelte';
-  import { DefaultMap, LRUMap } from 'mnemonist';
+  import { DefaultMap, LRUCache, LRUMap } from 'mnemonist';
   import ArrayKeyedMap from 'array-keyed-map';
   
   export let dictionary: Dictionary;
@@ -69,21 +69,24 @@
     toast("High contrast off");
   }
 
-  let patternCache = new DefaultMap<string, LRUMap<State[], string[]>>(
-    () => {
-      let map = new LRUMap<State[], string[]>(32);
-      (map as any).items = new ArrayKeyedMap();  // hack!
-      return map;
-    }
-  );
+  const solveCache = new LRUMap<string, LRUMap<State[], string[]>>(32);
 
   function solve(message: CustomEvent<{answer: string, patterns: State[][]}>) {
     const {answer, patterns} = message.detail;
     possibleSolves = patterns.map(pattern => {
-      const cache = patternCache.get(answer);
+      if (!solveCache.has(answer)) {
+        // cache this answer
+        const map = new LRUMap<State[], string[]>(32);
+        (map as any).items = new ArrayKeyedMap();  // hack!
+        solveCache.set(answer, map);
+      }
+      // asserting LRUMap bc we just ensured it was there
+      const cache = solveCache.get(answer) as LRUMap<State[], string[]>;
       if (!cache.has(pattern)) {
+        // add this pattern to the cache under this answer
         cache.set(pattern, [...dictionary.match(pattern, answer)]);
       }
+      // asserting string[] bc we just ensured it was there
       return cache.get(pattern) as string[];
     }).map(
       solves => solves[Math.floor(Math.random() * solves.length)]
