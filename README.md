@@ -19,7 +19,7 @@ Starting with a sorted dictionary of words that are all the same length...
 2. Go through the suffix array linearly and group the indices together based on each one's position within a word.  
    (Since our words are all the same length, and the concatenation delimiter adds 1 to that length, we can just
    group the indices by `index % (1 + wordLength)`)  
-   Since the original suffix array was sorted lexicographically, these suffix subarrays will be sorted too.
+   These "suffix subarrays" are already sorted lexicographically because the original suffix array was as well.
 3. When a row of green states (letters that are `Right`), yellow states (letters that are `Elsewhere`), and/or black states
    (letters that are `Wrong`) needs to be solved for:
     1. Start keeping a running set of possible solves. This'll actually be a list of multiple sets, each one representing a different 'solve path'.
@@ -27,12 +27,12 @@ Starting with a sorted dictionary of words that are all the same length...
        To process a `Right` letter, do two binary searches in the "suffix subarray" that matches its position: one search to find
        the very first word that has it at that position, and another to find the very last word with it there. Grab those two
        words and all of the ones in between them, then store them in a set.  
-       Narrow down the running set of solutions by taking its intersection with that set.  
+       Narrow down the running set of solves by taking its intersection with that set.  
     3. Do the `Elsewhere`s next. To process one, take all of the target word's letters except the correct one for this position and
        any that have already been used up, and for each one, collect the same type of word-set as for `Right` letters. Associate
        all of those sets with this position, since they're all different possibilities.  
        Once done, intersect the running solution set with each of these possibilities, and prune any intersections that end up empty.  
-       Make the remaining intersections the new sets of possible solves. Make sure to keep track of the letters each one had to consume to
+       The intersections that remain will be the new sets of possible solves. Make sure to keep track of the letters each one had to consume to
        get there. (We can't merge (union) all of these possibilities together because they represent different 'solve paths', aka
        different sequences of consumed letters.)
     4. Finally, finish off by processing the `Wrong` letters. Unlike `Elsewhere`s, `Wrong`s don't need to pay attention to the letters
@@ -42,7 +42,7 @@ Starting with a sorted dictionary of words that are all the same length...
        haven't already been used all the way up. Intersect that set with each set out of the current possible solves.
 4. After all of that, the 'current possible solves' will consist of a bunch of different sets, each containing words that match
    the requested pattern of states. Union all of those together and you have your set of results. (If there are no matches, it'll be
-   empty.) Pick a random one to finish the deed.
+   empty.) Pick a random one to finish up.
 
 \#2 could be simplified by constructing a suffix array that sorts by position before going lexicographically, but it didn't
 seem worth the trouble. It would come at the cost of a couple extra binary-search hops every time we need to find a letter.
@@ -50,7 +50,7 @@ seem worth the trouble. It would come at the cost of a couple extra binary-searc
 Also, since Wordle's dictionary is relatively small, most of this is kind of overkill -- a few linear regex searches on it might be quick
 enough to handle basically everything above. I just wanted to leave things open for words longer than 5 letters or a way-larger dictionary.
 
-...speaking of which, #3.iv above isn't working: grids with lots of Elsewheres followed by lots of Wrongs used to take up to two seconds
+...speaking of which, #3.iv above isn't working: grids with lots of Elsewheres followed by lots of Wrongs would take up to two seconds
 to solve before I started caching the possible solves for each combination of word + pattern of states. Even the caching technique fails
 if you draw a different pattern of Elsewheres on each row, though. (It's more-or-less fine for now because the small size of the Wordle
 grid makes you pretty likely to draw repeated rows, but the cracks will start showing on grids that are any larger.)
