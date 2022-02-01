@@ -17,8 +17,8 @@ a better alternative to the set stuff.
 Starting with a sorted dictionary of words that are all the same length...
 1. Concatenate the words together with an arbitrary out-of-alphabet delimiter, then construct a huge suffix array out of the resulting string.
 2. Go through the suffix array linearly and group the indices together based on each one's position within a word.  
-   (Since our words are all the same length, and the concatenation delimter adds 1 to that length, we can do this by just
-   grouping the indices by `index % (1 + wordLength)`)  
+   (Since our words are all the same length, and the concatenation delimiter adds 1 to that length, we can just
+   group the indices by `index % (1 + wordLength)`)  
    Since the original suffix array was sorted lexicographically, these suffix subarrays will be sorted too.
 3. When a row of green states (letters that are `Right`), yellow states (letters that are `Elsewhere`), and/or black states
    (letters that are `Wrong`) needs to be solved for:
@@ -50,10 +50,10 @@ seem worth the trouble. It would come at the cost of a couple extra binary-searc
 Also, since Wordle's dictionary is relatively small, most of this is kind of overkill -- a few linear regex searches on it might be quick
 enough to handle basically everything above. I just wanted to leave things open for words longer than 5 letters or a way-larger dictionary.
 
-...speaking of which, #3.iv above isn't working: grids with lots of Elsewheres followed by lots of Wrongs can take up to two seconds
-to solve. I've mitigated that by caching the list of possible solves that you get for each combination of word + pattern of states,
-but that still fails if you draw a different pattern of Elsewheres on each row. (It still works well enough for now because the small
-size of the Wordle grid makes you pretty likely to draw repeated rows, but it'll start cracking on grids that are any larger.)
+...speaking of which, #3.iv above isn't working: grids with lots of Elsewheres followed by lots of Wrongs used to take up to two seconds
+to solve before I started caching the possible solves for each combination of word + pattern of states. Even the caching technique fails
+if you draw a different pattern of Elsewheres on each row, though. (It's more-or-less fine for now because the small size of the Wordle
+grid makes you pretty likely to draw repeated rows, but the cracks will start showing on grids that are any larger.)
 
 Caching the results of individual Wrong cells would also help, but I don't have any ideas as to how. I tried making it search
 letter-by-letter instead of range-by-range so it could be backed by the cache I use for individual letters' results, but that just
