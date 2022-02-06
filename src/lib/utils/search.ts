@@ -3,24 +3,25 @@ import Sets from 'mnemonist/set';
 
 import { State } from './types';
 
-type Counter = {count: number, indices: number[]};  // indices will be used for membership-checking, but not making it a set bc it's always going to be really small
+type Counter = {count: number, elsewhereIndices: number[]};  // indices will be used for membership-checking, but not making it a set bc it's always going to be really small
 const EMPTY_SET = Object.freeze(new Set<string>());
 const LRU_CAPACITY = 512;  // idk
 
 class Possibility {
   constructor(
-    letter: string | null,
-    index: number | null,
+    letter: string,
+    index: number,
+    state: State,
     public readonly set: Set<string>,
     public readonly letterCounts: Record<string, Counter>,  // record of letters still available to use
   ) {
-    if (letter !== null) {
+    if (state !== State.Wrong && state !== State.Empty) {
       // don't like all this copying :(
       this.letterCounts = {...this.letterCounts, [letter]: {...this.letterCounts[letter]}};
       this.letterCounts[letter].count--;  // remove letter from available letters
-      if (index !== null) {
+      if (index !== null && state == State.Elsewhere) {
         // note the index this letter was used at
-        this.letterCounts[letter].indices = [...this.letterCounts[letter].indices, index];
+        this.letterCounts[letter].elsewhereIndices = [...this.letterCounts[letter].elsewhereIndices, index];
       }
     }
     // make it read-only
@@ -35,7 +36,7 @@ function counter(s: string): Record<string, Counter> {
   let counts: Record<string, Counter> = {};
   for (let char of s) {
     if (counts[char] === undefined) {
-      counts[char] = {count: 0, indices: []};
+      counts[char] = {count: 0, elsewhereIndices: []};
     }
     counts[char].count++;
   }
@@ -200,7 +201,7 @@ export class Dictionary {
     switch (state) {
       // 'Right' means we want a word that has this letter at this exact index
       case State.Right: {
-        return [new Possibility(letter, at, this.getRange(letter, at), soFar)];
+        return [new Possibility(letter, at, state, this.getRange(letter, at), soFar)];
       }
 
       // 'Elsewhere' means we want a word that has this letter, but not at this index
@@ -211,16 +212,16 @@ export class Dictionary {
         // l !== letter: we don't want to return words that have this letter at this index ofc
         // soFar[l] > 0: we also don't want words that have letters we've already used up
         const allowed = Object.keys(soFar).filter(l => l !== letter && soFar[l].count > 0);
-        return allowed.map(l => new Possibility(l, at, this.getRange(l, at), soFar));
+        return allowed.map(l => new Possibility(l, at, state, this.getRange(l, at), soFar));
       }
 
       // this means we want a word that doesn't have this letter anywhere
       // or one in which we've already used this letter all the way up
       case State.Wrong: {
         const exclude = Object.keys(soFar).filter(
-          l => soFar[l].count > 0 || soFar[l].indices.some(idx => idx > at)
+          l => soFar[l].count > 0 || soFar[l].elsewhereIndices.some(idx => idx > at)
         );
-        return [new Possibility(null, null, this.getRangeWithout(exclude, at), soFar)];
+        return [new Possibility(letter, at, state, this.getRangeWithout(exclude, at), soFar)];
       }
 
       // otherwise nothing
@@ -265,6 +266,7 @@ export class Dictionary {
 
     // the two EMPTY_SETS are there just in case there are no results
     // (Sets.union() needs at least two arguments so this is a lazy workaround)
+    console.log(Sets.union(EMPTY_SET, EMPTY_SET, ...possibilities.map(possibility => possibility.set)));
     return Sets.union(EMPTY_SET, EMPTY_SET, ...possibilities.map(possibility => possibility.set));
   }
 }
