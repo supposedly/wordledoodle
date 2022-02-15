@@ -3,7 +3,7 @@
 Wordle art! This gives you a Wordle grid to doodle on with three colors, and it tries its best to fill in the grid with matching words.
 
 If you've already solved today's Wordle but you still want to try out a result from here on the real site,
-you can open https://powerlanguage.co.uk/wordle in a Private or Incognito window and have at it.
+you can open https://www.nytimes.com/games/wordle/index.html in a Private or Incognito window and have at it.
 
 ## Thing I need to fix
 - Combining "elsewhere" (yellow) and "wrong" (black) letters takes too much time. More below

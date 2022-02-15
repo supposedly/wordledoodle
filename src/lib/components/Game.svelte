@@ -130,7 +130,7 @@
       );
     }
 
-    wordFromWordle = {word: dictionary.rawDictionary[index], hidden};
+    wordFromWordle = {word: dictionary.getDailyWord(index), hidden};
   }
 </script>
 

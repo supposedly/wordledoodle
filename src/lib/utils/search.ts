@@ -61,8 +61,9 @@ export class Dictionary {
   public readonly dictionary: readonly string[];
 
   constructor(
-    public readonly rawDictionary: readonly string[],
-    public readonly wordLength: number
+    public readonly wordLength: number,
+    private readonly rawDictionary: readonly string[],
+    private dailyWordCap: number | null = null
   ) {
     this.dictionary = [...this.rawDictionary].sort();
     this.gsaWordLength = 1 + this.wordLength;
@@ -79,6 +80,13 @@ export class Dictionary {
     for (let value of gsa.array) {
       this.gsaByPosition[value % this.gsaWordLength].suffixes.push(value);
     }
+  }
+
+  getDailyWord(index: number): string {
+    if (this.dailyWordCap === null) {
+      return this.rawDictionary[index];
+    }
+    return this.rawDictionary[index % this.dailyWordCap];
   }
 
   indexOf(word: string): number {

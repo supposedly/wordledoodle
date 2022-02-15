@@ -3,10 +3,10 @@
 
   import Game from './lib/components/Game.svelte';
   
-  import { words, wordLength } from './assets/wordle.dictionary';
+  import { words, lastWordIndex, wordLength } from './assets/wordle.dictionary';
   import './assets/global.scss';
 
-  const dictionary = new Dictionary(words, wordLength);
+  const dictionary = new Dictionary(wordLength, words, lastWordIndex);
 </script>
 
 <Game {dictionary}/>
