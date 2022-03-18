@@ -1,19 +1,19 @@
 <script lang="ts">
-  import { State, CSSState } from '../../utils/types';
+  import { State, CSSState } from "../../utils/types";
   import {
     FLIP_IN_DURATION,
     FLIP_OUT_DURATION,
     FLIP_OUT_DELAY,
-  } from '../../utils/constants';
+  } from "../../utils/constants";
 
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher } from "svelte";
 
   export let ter: string | null;
   export let state: State;
   export let defaultState: State;
   export let paintState: State;
   export let flipDelay: number;
-  
+
   export let disabled = false;
 
   let displayedLetter: string;
@@ -23,17 +23,17 @@
   $: {
     if (ter === null || disabled) {
       // delete the letter instantly
-      displayedLetter = '';
+      displayedLetter = "";
     } else {
       // flip to change letters
       // (this branch is also triggered if ter === '')
       flipping = true;
-  
+
       clearTimeout(letterTimeout);
       letterTimeout = setTimeout(() => {
-        displayedLetter = ter || '';  // this entire block is reactive on `ter`
+        displayedLetter = ter || ""; // this entire block is reactive on `ter`
       }, FLIP_IN_DURATION + flipDelay + FLIP_OUT_DELAY);
-  
+
       clearTimeout(flipTimeout);
       flipTimeout = setTimeout(() => {
         flipping = false;
@@ -42,14 +42,14 @@
   }
 
   function paint(e: MouseEvent) {
-      if (e.buttons !== 1) {
-          return;
-      }
-      state = paintState;
-  } 
-  
+    if (e.buttons !== 1) {
+      return;
+    }
+    state = paintState;
+  }
+
   const dispatcher = createEventDispatcher();
-  const stateChange = () => dispatcher('statechange');
+  const stateChange = () => dispatcher("statechange");
 
   $: state, stateChange();
 </script>
@@ -60,7 +60,9 @@
   class="tile {CSSState[state || defaultState].toLowerCase()}"
   on:mouseenter={paint}
   on:mousedown={paint}
-  on:touchmove|preventDefault={() => { state = paintState; }}
+  on:touchmove|preventDefault={() => {
+    state = paintState;
+  }}
   style="
     --flip-out-duration: {FLIP_OUT_DURATION}ms;
     --flip-out-delay: {FLIP_OUT_DELAY}ms;
@@ -68,7 +70,7 @@
     --flip-in-delay: {flipDelay}ms;
   "
 >
-  {#if displayedLetter && displayedLetter !== '\u200b'}
+  {#if displayedLetter && displayedLetter !== "\u200b"}
     {displayedLetter}
   {/if}
 </div>
@@ -90,7 +92,8 @@
     user-select: none;
     border: 2px solid;
 
-    transition: transform var(--flip-out-duration) ease-out var(--flip-out-delay),
+    transition: transform var(--flip-out-duration) ease-out
+        var(--flip-out-delay),
       background-color var(--color-change-duration),
       border-color var(--color-change-duration);
 
@@ -102,7 +105,6 @@
         border-color var(--color-change-duration);
       transform: scaleY(0);
     }
-    
 
     // colors
     &.empty {

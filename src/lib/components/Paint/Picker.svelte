@@ -1,18 +1,24 @@
 <script lang="ts">
-  import { State, CSSState } from '../../utils/types';
+  import { State, CSSState } from "../../utils/types";
 
   export let paintState: State = State.Right;
 
   export let highContrast = false;
-  export let lightTheme = false;  // not implementing this because it doesn't affect the grid colors 
+  export let lightTheme = false; // not implementing this because it doesn't affect the grid colors
   // (even on Wordle itself, it only changes black cells to white in the shared emoji thing, not the actual site's grid)
 
   const paintStates = [State.Right, State.Elsewhere, State.Wrong];
 </script>
 
 <section>
-  <input type="checkbox" class="like-button" id="high-contrast" title="Toggle high-contrast colors" bind:checked={highContrast}>
-  <label for="high-contrast" title="Toggle high-contrast colors"></label>
+  <input
+    type="checkbox"
+    class="like-button"
+    id="high-contrast"
+    title="Toggle high-contrast colors"
+    bind:checked={highContrast}
+  />
+  <label for="high-contrast" title="Toggle high-contrast colors" />
   {#each paintStates as state}
     <input
       type="radio"
@@ -20,12 +26,18 @@
       name="color"
       title={`Color for a letter that's ${State[state].toLowerCase()}`}
       checked={state === State.Right}
-      on:change={() => paintState = state}
-    >
+      on:change={() => (paintState = state)}
+    />
     <!-- i don't know why specifying `checked` that way works... -->
   {/each}
-  <input type="checkbox" class="like-button" id="light-theme" title="Toggle light-theme colors" bind:checked={lightTheme}>
-  <label for="light-theme" title="Toggle light-theme colors"></label>
+  <input
+    type="checkbox"
+    class="like-button"
+    id="light-theme"
+    title="Toggle light-theme colors"
+    bind:checked={lightTheme}
+  />
+  <label for="light-theme" title="Toggle light-theme colors" />
 </section>
 
 <style lang="scss">
@@ -67,7 +79,7 @@
     }
   }
 
-  input[type=checkbox].like-button ~ label {
+  input[type="checkbox"].like-button ~ label {
     align-self: center;
     background-color: var(--black);
     margin: {
@@ -77,7 +89,7 @@
     padding: 5px {
       top: 0px;
       bottom: 4px;
-    };
+    }
   }
 
   section {
@@ -86,7 +98,7 @@
     margin: 5px;
   }
 
-  input[type=radio].like-button {
+  input[type="radio"].like-button {
     &:not(:active) {
       // the special classes svelte adds make this override global.css's
       // inset box-shadow without the :not(:active)
@@ -124,13 +136,13 @@
     }
 
     &:after {
-      content: '⚫';
+      content: "⚫";
       color: transparent;
       font-size: 2.5em;
     }
 
     &:checked:after {
-      content: '🖌️';
+      content: "🖌️";
       color: unset;
       font-size: 2.5em;
     }

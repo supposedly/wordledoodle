@@ -1,15 +1,15 @@
 <script lang="ts">
-  import { State, WordleWord } from '../../utils/types';
-  import { SHAKE_DURATION } from '../../utils/constants';
-  
-  import Cell from './Cell.svelte';
-  import Letterwise from '../Input/Letterwise.svelte';
+  import { State, WordleWord } from "../../utils/types";
+  import { SHAKE_DURATION } from "../../utils/constants";
 
-  import { createEventDispatcher } from 'svelte';
-  import { tweened } from 'svelte/motion';
+  import Cell from "./Cell.svelte";
+  import Letterwise from "../Input/Letterwise.svelte";
+
+  import { createEventDispatcher } from "svelte";
+  import { tweened } from "svelte/motion";
 
   export let unsolvableRows: number[];
-  export let shaking = false;  // unused
+  export let shaking = false; // unused
   export let centerSelf = true;
   export let length: number;
   export let height: number;
@@ -19,29 +19,29 @@
 
   $: gameWidth = 1 + length;
   $: gameHeight = 1 + height;
-  $: gameRatio = (gameWidth / gameHeight);
+  $: gameRatio = gameWidth / gameHeight;
 
-  const ALL_FALSE = Array.from({length: height}, () => false);
+  const ALL_FALSE = Array.from({ length: height }, () => false);
   let shakingRows: boolean[];
   $: {
-    shakingRows = Array.from({length: height}, (_, idx) => unsolvableRows.includes(idx));
-    setTimeout(
-      () => { shakingRows = ALL_FALSE; },
-      SHAKE_DURATION
-    )
+    shakingRows = Array.from({ length: height }, (_, idx) =>
+      unsolvableRows.includes(idx)
+    );
+    setTimeout(() => {
+      shakingRows = ALL_FALSE;
+    }, SHAKE_DURATION);
   }
 
   export let possibleSolves: (string | null)[][];
-  let patterns = Array.from(
-    {length: height},
-    _ => Array.from({length}, () => State.Empty)
+  let patterns = Array.from({ length: height }, (_) =>
+    Array.from({ length }, () => State.Empty)
   );
 
   $: {
     // disable all rows below a fully-solved one (since wordle stops you from writing past that point)
     let i = -1;
     for (i = 0; i < patterns.length; i++) {
-      if (patterns[i].every(state => state === State.Right)) {
+      if (patterns[i].every((state) => state === State.Right)) {
         break;
       }
     }
@@ -49,9 +49,13 @@
 
     for (i = patterns.length - 1; i >= 0; i--) {
       if (i > fullySolvedRow) {
-        patterns[i] = patterns[i].map(state => state === State.Wrong ? State.Empty : state);
+        patterns[i] = patterns[i].map((state) =>
+          state === State.Wrong ? State.Empty : state
+        );
       } else {
-        patterns[i] = patterns[i].map(state => state === State.Empty ? State.Wrong : state);
+        patterns[i] = patterns[i].map((state) =>
+          state === State.Empty ? State.Wrong : state
+        );
       }
     }
 
@@ -69,23 +73,36 @@
   let boardHeight = tweened(0);
 
   $: if (!receivedContainerHeight && containerHeight !== undefined) {
-      const width = Math.min(Math.floor(containerHeight * gameRatio), containerWidth);
-      boardWidth = tweened(width, {duration: 100});
-      boardHeight = tweened(gameHeight * Math.floor(width / gameWidth), {duration: 100});
-      receivedContainerHeight = true;
-    }
+    const width = Math.min(
+      Math.floor(containerHeight * gameRatio),
+      containerWidth
+    );
+    boardWidth = tweened(width, { duration: 100 });
+    boardHeight = tweened(gameHeight * Math.floor(width / gameWidth), {
+      duration: 100,
+    });
+    receivedContainerHeight = true;
+  }
 
   $: if (receivedContainerHeight) {
-      const width = Math.min(Math.floor(containerHeight * gameRatio), containerWidth);
-      boardWidth = tweened(width, {duration: 100});
-      boardHeight = tweened(gameHeight * Math.floor(width / gameWidth), {duration: 100});
-    }
+    const width = Math.min(
+      Math.floor(containerHeight * gameRatio),
+      containerWidth
+    );
+    boardWidth = tweened(width, { duration: 100 });
+    boardHeight = tweened(gameHeight * Math.floor(width / gameWidth), {
+      duration: 100,
+    });
+  }
 
   let timeoutId: ReturnType<typeof setTimeout>;
   function resizeBoard() {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => {
-      const width = Math.min(Math.floor(containerHeight * gameRatio), containerWidth);
+      const width = Math.min(
+        Math.floor(containerHeight * gameRatio),
+        containerWidth
+      );
       boardWidth.set(width);
       boardHeight.set(gameHeight * Math.floor(width / gameWidth));
     }, 25);
@@ -96,35 +113,36 @@
   // for some reason onMount won't work
   $: {
     if (!initialized && containerHeight !== undefined) {
-    initialized = true;
-    resizeBoard();
+      initialized = true;
+      resizeBoard();
+    }
   }
-}
 
-// need to handle touchmove from up here rather than solely in the individual cells
-// bc for some reason touchmove only fires on the element that was originally touchdown'd on...
-function paintByTouch(e: TouchEvent) {
-  const [pos] = e.changedTouches;
-  if (pos !== undefined) {
-    document.elementFromPoint(pos.clientX, pos.clientY)?.dispatchEvent(
-      new TouchEvent('touchmove')
-    );
+  // need to handle touchmove from up here rather than solely in the individual cells
+  // bc for some reason touchmove only fires on the element that was originally touchdown'd on...
+  function paintByTouch(e: TouchEvent) {
+    const [pos] = e.changedTouches;
+    if (pos !== undefined) {
+      document
+        .elementFromPoint(pos.clientX, pos.clientY)
+        ?.dispatchEvent(new TouchEvent("touchmove"));
+    }
   }
-}
 
-function rowChanged(row: number, flip: boolean) {
-  if (possibleSolves[row]) {
-    possibleSolves[row] = possibleSolves[row].map(
-      flip
-      ? (letter => letter === '' ? '\u200b' : '')  // keep flipping forever by alternating btwn empty & zwsp
-      : () => null
-    );
-    possibleSolves = possibleSolves;
+  function rowChanged(row: number, flip: boolean) {
+    if (possibleSolves[row]) {
+      possibleSolves[row] = possibleSolves[row].map(
+        flip
+          ? (letter) => (letter === "" ? "\u200b" : "") // keep flipping forever by alternating btwn empty & zwsp
+          : () => null
+      );
+      possibleSolves = possibleSolves;
+    }
   }
-}
 
-const dispatcher = createEventDispatcher();
-const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('solve', {answer, patterns});
+  const dispatcher = createEventDispatcher();
+  const solve = ({ detail: { answer } }: { detail: { answer: string } }) =>
+    dispatcher("solve", { answer, patterns });
 </script>
 
 <svelte:window on:resize={resizeBoard} />
@@ -137,7 +155,11 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
   on:touchmove|preventDefault={paintByTouch}
 >
   {#each patterns as word, row}
-    <div class="row" class:shaking={shakingRows[row] && word[0] !== State.Empty}> <!-- dumb thing to avoid making empty rows shake -->
+    <div
+      class="row"
+      class:shaking={shakingRows[row] && word[0] !== State.Empty}
+    >
+      <!-- dumb thing to avoid making empty rows shake -->
       {#each word as state, col}
         <Cell
           bind:state
@@ -146,15 +168,20 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
           disabled={row > fullySolvedRow}
           flipDelay={col * 25}
           {paintState}
-          on:statechange={() => { rowChanged(row, false); }}
+          on:statechange={() => {
+            rowChanged(row, false);
+          }}
         />
       {/each}
       <button
         class="clear"
         title="Clear this row"
         disabled={row > fullySolvedRow}
-        on:click={() => { word = clearRow(word); rowChanged(row, true); }}
-      ></button>
+        on:click={() => {
+          word = clearRow(word);
+          rowChanged(row, true);
+        }}
+      />
     </div>
   {/each}
   <form class="row">
@@ -167,13 +194,18 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
       let:dispatch
       on:solve={solve}
     >
-      <button title="Solve for matching words" on:click|preventDefault={() => dispatch()} disabled={!valid}></button>
+      <button
+        title="Solve for matching words"
+        on:click|preventDefault={() => dispatch()}
+        disabled={!valid}
+      />
     </Letterwise>
   </form>
 </div>
 
 <style lang="scss">
-  .board, .row {
+  .board,
+  .row {
     transition: transform var(--shake-duration) cubic-bezier(0.5, 3, 0.5, -3);
     transform: translateX(0);
     &.shaking {
@@ -195,7 +227,7 @@ const solve = ({detail: {answer}}: {detail: {answer: string}}) => dispatcher('so
       user-select: none;
     }
   }
-  
+
   .row {
     display: grid;
     grid-template-columns: repeat(6, 1fr);

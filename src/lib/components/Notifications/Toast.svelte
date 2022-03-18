@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { fade } from 'svelte/transition';
+  import { fade } from "svelte/transition";
 
   export let movingUp: boolean = false;
 </script>
 
 <li in:fade class:movingUp>
-  <slot></slot>
+  <slot />
 </li>
 
 <style lang="scss">
@@ -22,7 +22,7 @@
 
     top: 0;
   }
-  
+
   .movingUp {
     transition: transform 200ms, top 200ms;
     // top: -80px;

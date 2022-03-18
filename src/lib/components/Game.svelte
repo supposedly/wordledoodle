@@ -1,27 +1,33 @@
 <script lang="ts">
-  import type { State, WordleWord } from '../utils/types';
-  import type { Dictionary } from '../utils/search';
-  import { SHAKE_DURATION, SPAM_CLICK_TIMEOUT, TODAYS_WORDLE } from '../utils/constants';
+  import type { State, WordleWord } from "../utils/types";
+  import type { Dictionary } from "../utils/search";
+  import {
+    SHAKE_DURATION,
+    SPAM_CLICK_TIMEOUT,
+    TODAYS_WORDLE,
+  } from "../utils/constants";
 
-  import Grid from './Board/Grid.svelte';
-  import Picker from './Paint/Picker.svelte';
-  import Daywise from './Input/Daywise.svelte';
-  import Toaster from './Notifications/Toaster.svelte';
-  import { ToastQueue } from './Notifications/toastQueue';
+  import Grid from "./Board/Grid.svelte";
+  import Picker from "./Paint/Picker.svelte";
+  import Daywise from "./Input/Daywise.svelte";
+  import Toaster from "./Notifications/Toaster.svelte";
+  import { ToastQueue } from "./Notifications/toastQueue";
 
-  import { onMount } from 'svelte';
-  import { DefaultMap, LRUCache, LRUMap } from 'mnemonist';
-  import ArrayKeyedMap from 'array-keyed-map';
-  
+  import { onMount } from "svelte";
+  import { DefaultMap, LRUCache, LRUMap } from "mnemonist";
+  import ArrayKeyedMap from "array-keyed-map";
+
   export let dictionary: Dictionary;
   const height = 6;
   const length = dictionary.wordLength;
-  
+
   const toaster = new ToastQueue<string>();
-    
-  const EMPTY_ARRAY = Array.from({length}, () => '');
+
+  const EMPTY_ARRAY = Array.from({ length }, () => "");
   let unsolvableRows: number[] = [];
-  let possibleSolves: string[][] = Array.from({length: height}, () => [...EMPTY_ARRAY]);
+  let possibleSolves: string[][] = Array.from({ length: height }, () => [
+    ...EMPTY_ARRAY,
+  ]);
 
   let containerHeight: number;
   let containerWidth: number;
@@ -35,7 +41,9 @@
 
   let loaded: boolean = false;
 
-  onMount(() => { loaded = true; })
+  onMount(() => {
+    loaded = true;
+  });
 
   function toast(message: string) {
     if (!loaded) {
@@ -56,8 +64,11 @@
   $: if (lightTheme) {
     toast("Dark theme off");
     lightThemeMessage1Timeout = setTimeout(() => {
-      toast("(Wordle won't look like this with dark theme off,")
-      lightThemeMessage2Timeout = setTimeout(() => toast("but it'll use white squares ⬜ when you share)"), 1400);
+      toast("(Wordle won't look like this with dark theme off,");
+      lightThemeMessage2Timeout = setTimeout(
+        () => toast("but it'll use white squares ⬜ when you share)"),
+        1400
+      );
     }, 1400);
   } else {
     toast("Dark theme on");
@@ -71,36 +82,41 @@
 
   const solveCache = new LRUMap<string, LRUMap<State[], string[]>>(32);
 
-  function solve(message: CustomEvent<{answer: string, patterns: State[][]}>) {
-    const {answer, patterns} = message.detail;
-    possibleSolves = patterns.map(pattern => {
-      if (!solveCache.has(answer)) {
-        // cache this answer
-        const map = new LRUMap<State[], string[]>(32);
-        (map as any).items = new ArrayKeyedMap();  // hack!
-        solveCache.set(answer, map);
-      }
-      // asserting LRUMap bc we just ensured it was there
-      const cache = solveCache.get(answer) as LRUMap<State[], string[]>;
-      if (!cache.has(pattern)) {
-        // add this pattern to the cache under this answer
-        cache.set(pattern, [...dictionary.match(pattern, answer)]);
-      }
-      // asserting string[] bc we just ensured it was there
-      return cache.get(pattern) as string[];
-    }).map(
-      solves => solves[Math.floor(Math.random() * solves.length)]
-    ).map(
-      word => word ? [...word] : [...EMPTY_ARRAY]
-    );
+  function solve(
+    message: CustomEvent<{ answer: string; patterns: State[][] }>
+  ) {
+    const { answer, patterns } = message.detail;
+    possibleSolves = patterns
+      .map((pattern) => {
+        if (!solveCache.has(answer)) {
+          // cache this answer
+          const map = new LRUMap<State[], string[]>(32);
+          (map as any).items = new ArrayKeyedMap(); // hack!
+          solveCache.set(answer, map);
+        }
+        // asserting LRUMap bc we just ensured it was there
+        const cache = solveCache.get(answer) as LRUMap<State[], string[]>;
+        if (!cache.has(pattern)) {
+          // add this pattern to the cache under this answer
+          cache.set(pattern, [...dictionary.match(pattern, answer)]);
+        }
+        // asserting string[] bc we just ensured it was there
+        return cache.get(pattern) as string[];
+      })
+      .map((solves) => solves[Math.floor(Math.random() * solves.length)])
+      .map((word) => (word ? [...word] : [...EMPTY_ARRAY]));
 
-    unsolvableRows = possibleSolves.map((_, row) => row).filter(row => possibleSolves[row][0] === '');
+    unsolvableRows = possibleSolves
+      .map((_, row) => row)
+      .filter((row) => possibleSolves[row][0] === "");
   }
 
-  let wordFromWordle: WordleWord = {word: null, hidden: null};
+  let wordFromWordle: WordleWord = { word: null, hidden: null };
 
   let wordToastTimeout: ReturnType<typeof setTimeout>;
-  function setWordFromWordle(message: CustomEvent<{index: number, hidden: boolean}>) {
+  function setWordFromWordle(
+    message: CustomEvent<{ index: number; hidden: boolean }>
+  ) {
     clearTimeout(wordToastTimeout);
 
     const index = message.detail.index;
@@ -114,34 +130,51 @@
       //   ),
       //   SPAM_CLICK_TIMEOUT
       // );
-      toast(hidden
+      toast(
+        hidden
           ? `Today's wordle <span style="font-size: small;">(hidden)</span>`
-          : `Today's wordle`// <span style="font-size: small;">(#${index})</span>`
-        );
+          : `Today's wordle` // <span style="font-size: small;">(#${index})</span>`
+      );
     } else if (index === TODAYS_WORDLE - 1) {
       wordToastTimeout = setTimeout(
-        () => toast(`#${index} <span style="font-size: small;">(yesterday)</span>`),
+        () =>
+          toast(`#${index} <span style="font-size: small;">(yesterday)</span>`),
         SPAM_CLICK_TIMEOUT
       );
     } else {
       wordToastTimeout = setTimeout(
-        () => toast(`#${index} <span style="font-size: small;">(${TODAYS_WORDLE - index} days ago)</span>`),
+        () =>
+          toast(
+            `#${index} <span style="font-size: small;">(${
+              TODAYS_WORDLE - index
+            } days ago)</span>`
+          ),
         SPAM_CLICK_TIMEOUT
       );
     }
 
-    wordFromWordle = {word: dictionary.getDailyWord(index), hidden};
+    wordFromWordle = { word: dictionary.getDailyWord(index), hidden };
   }
 </script>
 
-
-<article class="game" class:lightTheme class:highContrast style="--shake-duration: {SHAKE_DURATION}ms">
+<article
+  class="game"
+  class:lightTheme
+  class:highContrast
+  style="--shake-duration: {SHAKE_DURATION}ms"
+>
   <Picker bind:lightTheme bind:highContrast bind:paintState />
-  <section class="item-center container" bind:clientHeight={containerHeight} bind:clientWidth={containerWidth}>
-    <Toaster {toaster}/>
+  <section
+    class="item-center container"
+    bind:clientHeight={containerHeight}
+    bind:clientWidth={containerWidth}
+  >
+    <Toaster {toaster} />
     <Grid
-      {length} {height}
-      {containerHeight} {containerWidth}
+      {length}
+      {height}
+      {containerHeight}
+      {containerWidth}
       {paintState}
       {unsolvableRows}
       {possibleSolves}
@@ -149,11 +182,10 @@
       on:solve={solve}
     />
   </section>
-  <Daywise on:use={word => setWordFromWordle(word)} />
+  <Daywise on:use={(word) => setWordFromWordle(word)} />
 </article>
 
 <style>
-
   .game {
     width: 100%;
     max-width: var(--game-max-width);

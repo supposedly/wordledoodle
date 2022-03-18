@@ -274,7 +274,6 @@ export class Dictionary {
 
     // the two EMPTY_SETS are there just in case there are no results
     // (Sets.union() needs at least two arguments so this is a lazy workaround)
-    console.log(Sets.union(EMPTY_SET, EMPTY_SET, ...possibilities.map(possibility => possibility.set)));
     return Sets.union(EMPTY_SET, EMPTY_SET, ...possibilities.map(possibility => possibility.set));
   }
 }

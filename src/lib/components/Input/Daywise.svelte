@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { TODAYS_WORDLE } from '../..//utils/constants';
-  import { createEventDispatcher } from 'svelte';
+  import { TODAYS_WORDLE } from "../..//utils/constants";
+  import { createEventDispatcher } from "svelte";
 
   const dispatch = createEventDispatcher();
 
@@ -9,20 +9,20 @@
 
   function goBack() {
     index--;
-    hidden = (index >= TODAYS_WORDLE);
-    dispatch('use', {index, hidden});
+    hidden = index >= TODAYS_WORDLE;
+    dispatch("use", { index, hidden });
   }
 
   function middleButton() {
     hidden = !hidden;
     index = TODAYS_WORDLE;
-    dispatch('use', {index, hidden});
+    dispatch("use", { index, hidden });
   }
 
   function goForward() {
     index++;
-    hidden = (index >= TODAYS_WORDLE);
-    dispatch('use', {index, hidden});
+    hidden = index >= TODAYS_WORDLE;
+    dispatch("use", { index, hidden });
   }
 </script>
 
@@ -30,8 +30,8 @@
   <button
     on:click={goBack}
     title="Use previous day's wordle"
-    disabled={index <= 0}
-  >◀️</button>
+    disabled={index <= 0}>◀️</button
+  >
 
   <button
     on:click={middleButton}
@@ -43,8 +43,8 @@
   <button
     on:click={goForward}
     title="Use next day's wordle"
-    disabled={index >= TODAYS_WORDLE}
-  >▶️</button>
+    disabled={index >= TODAYS_WORDLE}>▶️</button
+  >
 </section>
 
 <style lang="scss">
@@ -70,12 +70,11 @@
     }
     cursor: pointer;
     font-weight: bold;
-    
   }
 
   button {
     font-size: large;
-    
+
     &:active {
       font-size: small;
     }

@@ -1,12 +1,11 @@
 <script lang="ts">
-  import Toast from './Toast.svelte';
-  import type { ToastQueue } from './toastQueue';
+  import Toast from "./Toast.svelte";
+  import type { ToastQueue } from "./toastQueue";
 
   export let toaster: ToastQueue<string>;
 
   let movingUp: boolean;
   $: movingUp = $toaster[0] && $toaster[0].dequeuing;
-
 </script>
 
 <ol class="container">
