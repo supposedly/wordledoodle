@@ -188,9 +188,9 @@
 <style>
   .game {
     width: 100%;
+    height: 100%;
     max-width: var(--game-max-width);
     margin: 0 auto;
-    height: 100%;
     display: flex;
     flex-direction: column;
   }
@@ -201,6 +201,7 @@
   }
 
   .container {
+    height: 100%;
     flex-grow: 1;
     overflow: hidden;
     margin-bottom: 0;

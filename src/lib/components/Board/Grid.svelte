@@ -95,28 +95,7 @@
     });
   }
 
-  let timeoutId: ReturnType<typeof setTimeout>;
-  function resizeBoard() {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => {
-      const width = Math.min(
-        Math.floor(containerHeight * gameRatio),
-        containerWidth
-      );
-      boardWidth.set(width);
-      boardHeight.set(gameHeight * Math.floor(width / gameWidth));
-    }, 25);
-  }
-
   let initialized = false;
-
-  // for some reason onMount won't work
-  $: {
-    if (!initialized && containerHeight !== undefined) {
-      initialized = true;
-      resizeBoard();
-    }
-  }
 
   // need to handle touchmove from up here rather than solely in the individual cells
   // bc for some reason touchmove only fires on the element that was originally touchdown'd on...
@@ -144,8 +123,6 @@
   const solve = ({ detail: { answer } }: { detail: { answer: string } }) =>
     dispatcher("solve", { answer, patterns });
 </script>
-
-<svelte:window on:resize={resizeBoard} />
 
 <div
   class="board"
